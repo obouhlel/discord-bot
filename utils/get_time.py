@@ -11,19 +11,18 @@ def get_times(url: str) -> dict:
         if times:
             if len(times) == 5:
                 time_dict = {
-                    "Fajr": times[0],
-                    "Dhuhr": times[1],
-                    "Asr": times[2],
-                    "Maghrib": times[3],
-                    "Isha": times[4]
+                    "Fajr": datetime.strptime(times[0]),
+                    "Dhuhr": datetime.strptime(times[1]),
+                    "Asr": datetime.strptime(times[2]),
+                    "Maghrib": datetime.strptime(times[3]),
+                    "Isha": datetime.strptime(times[4])
                 }
             else:
                 return None
             now = datetime.now()
             current_time = datetime.strptime(now.strftime("%H:%M"), "%H:%M")
             for key, value in time_dict.items():
-                value_time = datetime.strptime(value, "%H:%M")
-                if value_time > current_time:
+                if value > current_time:
                     time_dict[key] = f"**{value}**"
                     break
             return time_dict
