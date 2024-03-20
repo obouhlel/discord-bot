@@ -5,7 +5,7 @@ from discord import Interaction
 
 # With prefix command
 @bot.command(
-    name="times",
+    name="times_url",
     description="Get times of pray with an URL",
     options=[
         {
@@ -16,7 +16,7 @@ from discord import Interaction
         }
     ]
 )
-async def times(ctx: commands.Context, url: str = None):
+async def times_url(ctx: commands.Context, url: str = None):
     try:
         if not url:
             await ctx.send("You need to provide an URL.")
@@ -32,10 +32,10 @@ async def times(ctx: commands.Context, url: str = None):
 
 # With slash command
 @bot.tree.command(
-    name="times",
+    name="times_url",
     description="Get times of pray with an URL",
 )
-async def times(interaction: Interaction, url: str = None):
+async def times_url(interaction: Interaction, url: str = None):
     try:
         if not url:
             await interaction.response.send_message("You need to provide an URL.")

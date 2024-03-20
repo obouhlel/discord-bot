@@ -7,6 +7,7 @@ def get_times(url: str) -> dict:
     response = requests.get(url)
     if not response.status_code == 200:
         return None
+    print(response.text)
     times = re.search(r'"times":(\[.+?\]),', response.text).group(1)
     times = json.loads(times)
     if not times and len(times) == 5:

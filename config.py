@@ -25,8 +25,12 @@ CMDS = [
         "description": "Disconnect on voice channel",
     },
     {
-        "name": "times",
-        "description": "Need to give a link of Mawaqit website to get the times of pray",
+        "name": "times_url",
+        "description": "Need to give an url of Mawaqit website to get the times of pray",
+    },
+    {
+        "name": "times_city",
+        "description": "Need to give a city to get the times of pray",
     },
     {
         "name": "play",
@@ -36,8 +40,10 @@ CMDS = [
 
 mawaqit_url = {
     "Goussainville": "https://mawaqit.net/fr/mosquee-goussainville",
+    "Merignac": "https://mawaqit.net/fr/m/mosquee-essalam-merignac",
 }
 
 pray_times = {
     "Goussainville": get_times(mawaqit_url["Goussainville"]),
+    "Merignac": get_times(mawaqit_url["Merignac"]),
 }
