@@ -21,7 +21,7 @@ async def times(ctx: commands.Context, url: str = None):
         if not url:
             await ctx.send("You need to provide an URL.")
             return
-        times = found_next_time(get_times(url))
+        times = found_next_time_to_pray(get_times(url))
         if not times:
             await ctx.send("Error getting times. Check the URL and try again.")
         times_str = pray_time_dict_to_str(times)
@@ -40,7 +40,7 @@ async def times(interaction: Interaction, url: str = None):
         if not url:
             await interaction.response.send_message("You need to provide an URL.")
             return
-        times = found_next_time(get_times(url))
+        times = found_next_time_to_pray(get_times(url))
         if not times:
             await interaction.response.send_message("Error getting times. Check the URL and try again.")
         times_str = pray_time_dict_to_str(times)
