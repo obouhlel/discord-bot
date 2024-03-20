@@ -11,11 +11,11 @@ def get_times(url: str) -> dict:
         if times:
             if len(times) == 5:
                 time_dict = {
-                    "Fajr": datetime.strptime(times[0]),
-                    "Dhuhr": datetime.strptime(times[1]),
-                    "Asr": datetime.strptime(times[2]),
-                    "Maghrib": datetime.strptime(times[3]),
-                    "Isha": datetime.strptime(times[4])
+                    "Fajr": datetime.strptime(times[0], "%H:%M"),
+                    "Dhuhr": datetime.strptime(times[1], "%H:%M"),
+                    "Asr": datetime.strptime(times[2], "%H:%M"),
+                    "Maghrib": datetime.strptime(times[3], "%H:%M"),
+                    "Isha": datetime.strptime(times[4], "%H:%M")
                 }
             else:
                 return None
