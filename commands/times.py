@@ -21,12 +21,11 @@ async def times(ctx: commands.Context, url: str = None):
         if not url:
             await ctx.send("You need to provide an URL.")
             return
-        times = get_times(url)
-        if times:
-            times_str = "\n".join([f"- {key} : {value}" for key, value in times.items()])
-            await ctx.send(times_str)
-        else:
+        times = found_next_time(get_times(url))
+        if not times:
             await ctx.send("Error getting times. Check the URL and try again.")
+        times_str = pray_time_dict_to_str(times)
+        await ctx.send(times_str)
     except Exception as e:
         await ctx.send("An error occurred. Please try again.")
         print(f"Error: {e}")
@@ -41,12 +40,11 @@ async def times(interaction: Interaction, url: str = None):
         if not url:
             await interaction.response.send_message("You need to provide an URL.")
             return
-        times = get_times(url)
-        if times:
-            times_str = "\n".join([f"- {key} : {value}" for key, value in times.items()])
-            await interaction.response.send_message(times_str)
-        else:
+        times = found_next_time(get_times(url))
+        if not times:
             await interaction.response.send_message("Error getting times. Check the URL and try again.")
+        times_str = pray_time_dict_to_str(times)
+        await interaction.response.send_message(times_str)
     except Exception as e:
         await interaction.response.send_message("An error occurred. Please try again.")
         print(f"Error: {e}")

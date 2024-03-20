@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from utils import get_times
 import os
 
 load_dotenv()
@@ -32,3 +33,11 @@ CMDS = [
         "description": "Play a sound",
     }
 ]
+
+mawaqit_url = {
+    "Goussainville": "https://mawaqit.net/fr/mosquee-goussainville",
+}
+
+pray_times = {
+    "Goussainville": get_times(mawaqit_url["Goussainville"]),
+}
