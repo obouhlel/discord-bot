@@ -31,13 +31,12 @@ client.on(Events.ClientReady, async (readyClient: Client<true>) => {
 client.on(Events.InteractionCreate, async (interaction: Interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
-  for (const command of commands) {
-    if (interaction.commandName === command.data.name) {
-      await command.execute(interaction);
-      return;
-    }
+  const command = commands.get(interaction.commandName);
+  if (!command) {
+    await interaction.reply("Command not found");
+    return;
   }
-  await interaction.reply("Command not found");
+  await command.execute(interaction);
 });
 
 client.login(process.env.DISCORD_TOKEN);
