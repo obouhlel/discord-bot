@@ -1,0 +1,6 @@
+services:
+  bot:
+    container_name: bot_discord
+    build: .
+    env_file:
+      - .env

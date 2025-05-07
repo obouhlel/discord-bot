@@ -4,15 +4,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js",
-    "build": "tsup src/index.ts --minify"
+    "bot": "bun ./src/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "eslint": "^9.26.0",
-    "tsup": "^8.4.0",
-    "tsx": "^4.19.4"
+    "eslint": "^9.26.0"
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
