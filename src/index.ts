@@ -19,6 +19,7 @@ client.on(Events.ClientReady, async (readyClient: Client<true>) => {
   console.log(`Logged in as ${readyClient.user.tag}!`);
 
   try {
+    console.log("Update slash commands");
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
       body: commandsInfo,
     });
