@@ -1,5 +1,5 @@
 import { Client, Events, GatewayIntentBits, REST, Routes } from "discord.js";
-import type { Interaction } from "discord.js";
+import type { Interaction, Message } from "discord.js";
 import { commands, commandsInfo } from "./commands";
 import dotenv from "dotenv";
 
@@ -10,6 +10,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.DirectMessages,
   ],
 });
 
@@ -37,6 +38,10 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     return;
   }
   await command.execute(interaction);
+});
+
+client.on(Events.MessageCreate, async (message: Message) => {
+  console.log(message.content);
 });
 
 client.login(process.env.DISCORD_TOKEN);
