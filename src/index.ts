@@ -41,7 +41,9 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
 });
 
 client.on(Events.MessageCreate, async (message: Message) => {
-  console.log(message.content);
+  if (message.content && message.content.includes("quoi")) {
+    await message.reply("feur");
+  }
 });
 
 client.login(process.env.DISCORD_TOKEN);
