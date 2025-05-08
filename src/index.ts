@@ -1,4 +1,13 @@
-import { Client, Events, GatewayIntentBits, REST, Routes } from "discord.js";
+import {
+  ChannelType,
+  Client,
+  Emoji,
+  Events,
+  GatewayIntentBits,
+  Partials,
+  REST,
+  Routes,
+} from "discord.js";
 import type { Interaction, Message } from "discord.js";
 import { commands, commandsInfo } from "./commands";
 import dotenv from "dotenv";
@@ -11,12 +20,14 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.DirectMessageTyping,
   ],
+  partials: [Partials.Channel, Partials.Message],
 });
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
-client.on(Events.ClientReady, async (readyClient: Client<true>) => {
+client.once(Events.ClientReady, async (readyClient: Client<true>) => {
   console.log(`Logged in as ${readyClient.user.tag}!`);
 
   try {
@@ -41,8 +52,10 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
 });
 
 client.on(Events.MessageCreate, async (message: Message) => {
-  if (message.content && message.content.includes("quoi")) {
+  console.log(message.content);
+  if (message.content.includes("quoi")) {
     await message.reply("feur");
+    return;
   }
 });
 
