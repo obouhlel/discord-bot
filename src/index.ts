@@ -53,7 +53,8 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
 
 client.on(Events.MessageCreate, async (message: Message) => {
   console.log(message.content);
-  if (message.content.includes("quoi")) {
+  const m = message.content.toLowerCase();
+  if (m.includes("quoi")) {
     await message.reply("feur");
     return;
   }
