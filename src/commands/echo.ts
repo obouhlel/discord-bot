@@ -1,3 +1,4 @@
+import type { FastifyInstance } from "fastify";
 import { InteractionContextType, SlashCommandBuilder } from "discord.js";
 import type {
   ChatInputCommandInteraction,
@@ -15,7 +16,10 @@ export const echo = {
         .setRequired(true)
     )
     .setContexts([InteractionContextType.Guild]),
-  async execute(interaction: ChatInputCommandInteraction) {
+  async execute(
+    interaction: ChatInputCommandInteraction,
+    fastify: FastifyInstance
+  ) {
     const message = interaction.options.getString("message", true);
     await interaction.reply(message);
   },

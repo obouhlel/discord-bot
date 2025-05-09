@@ -1,6 +1,6 @@
+import fp from "fastify-plugin";
 import type { FastifyPluginAsync } from "fastify";
 import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
-import fp from "fastify-plugin";
 import { handlerMessageCreate, handlerInteractionCreate } from "../events";
 
 declare module "fastify" {
@@ -26,7 +26,9 @@ const discordPlugin: FastifyPluginAsync = fp(async (server) => {
   client.once(Events.ClientReady, async () => {
     console.log(`✅ | Client is ready ${client.user?.tag}`);
   });
-  client.on(Events.InteractionCreate, handlerInteractionCreate);
+  client.on(Events.InteractionCreate, async (interaction) => {
+    return handlerInteractionCreate(interaction, server);
+  });
   client.on(Events.MessageCreate, handlerMessageCreate);
 });
 

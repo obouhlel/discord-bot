@@ -10,8 +10,8 @@ const fastify = Fastify({
   logger: true,
 });
 
-fastify.register(discordPlugin);
 fastify.register(redisPlugin);
+fastify.register(discordPlugin);
 fastify.register(routes);
 
 async function start() {
