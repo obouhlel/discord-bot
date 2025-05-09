@@ -2,14 +2,28 @@ services:
   bot:
     container_name: bot_discord
     build: .
-    env_file:
-      - .env
+    environment:
+      - CLIENT_ID=${CLIENT_ID}
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+    labels:
+      - "coolify.managed=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.bot.rule=Host(`neko.oustopie.xyz`)"
+      - "traefik.http.routers.bot.entrypoints=websecure"
+      - "traefik.http.routers.bot.tls=true"
+      - "traefik.http.services.bot.loadbalancer.server.port=3000"
     expose:
       - "3000"
-    restart: "on-failure"
+    restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
+    networks:
+      - coolify
+
+networks:
+  coolify:
+    external: true
