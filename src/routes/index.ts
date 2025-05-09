@@ -5,6 +5,8 @@ import DiscordService from "../services/discord";
 export default async function routes(fastify: FastifyInstance) {
   const discord = new DiscordService(fastify.redis);
 
+  await discord.updateCommands();
+
   await discord.client.login();
 
   discord.events();

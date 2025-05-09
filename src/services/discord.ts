@@ -1,10 +1,18 @@
 import type { RedisClient } from "bun";
-import { Client, REST, Events, GatewayIntentBits, Partials } from "discord.js";
+import {
+  Client,
+  REST,
+  Routes,
+  Events,
+  GatewayIntentBits,
+  Partials,
+} from "discord.js";
 import {
   handlerMessageCreate,
   handlerInteractionCreate,
   handlerGuildMemberAdd,
 } from "../events";
+import { commandsInfo } from "../commands";
 
 export default class DiscordService {
   public client: Client;
@@ -28,6 +36,18 @@ export default class DiscordService {
     );
 
     this.redis = redis;
+  }
+
+  public async updateCommands() {
+    try {
+      console.log("🔄 | Updating slash commands...");
+      await this.rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
+        body: commandsInfo,
+      });
+      console.log("✅ | Slash commands updated successfully.");
+    } catch (error) {
+      console.error("❌ | Failed to update slash commands:", error);
+    }
   }
 
   public async events() {
