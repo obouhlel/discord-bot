@@ -5,11 +5,10 @@ services:
     environment:
       - CLIENT_ID=${CLIENT_ID}
       - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - REDIS_URL=${REDIS_URL}
     labels:
       - "coolify.managed=true"
       - "traefik.enable=true"
-      - "traefik.http.routers.bot.rule=Host(`api.neko.oustopie.xyz`)"
+      - "traefik.http.routers.bot.rule=Host(`api-neko.oustopie.xyz`)"
       - "traefik.http.routers.bot.entrypoints=https"
       - "traefik.http.routers.bot.tls=true"
       - "traefik.http.services.bot.loadbalancer.server.port=3000"
