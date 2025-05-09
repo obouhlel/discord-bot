@@ -12,20 +12,18 @@ export const welcome = {
     fastify: FastifyInstance
   ) {
     const channel = interaction.channel?.toString();
+    const channelId = interaction.channelId;
     const key = `welcome:${interaction.guildId!}`;
     try {
-      const value = (await fastify.redis.get(key)) as
-        | `<@${string}>`
-        | `<#${string}>`
-        | undefined;
-      if (value && value === channel) {
+      const value = await fastify.redis.get(key);
+      if (value && value === channelId) {
         await interaction.reply(`Welcome message is already set in ${channel}`);
         return;
       }
-      await fastify.redis.set(key, channel as string);
+      await fastify.redis.set(key, channelId);
       if (value) {
         await interaction.reply(
-          `Welcome message is update to ${channel} (old: ${value})`
+          `Welcome message is update to ${channel} (old: <#${value}>)`
         );
       } else {
         await interaction.reply(`Welcome message is set to ${channel}`);
