@@ -3,8 +3,23 @@ import type { FastifyReply } from "fastify";
 
 export async function status(client: Client, reply: FastifyReply) {
   try {
-    return reply.send({ user: client.user?.tag });
+    if (!client.isReady()) {
+      return reply.status(503).send({
+        status: "error",
+        message: "Bot is not ready",
+      });
+    }
+
+    return reply.status(200).send({
+      status: "ok",
+      message: "Bot is operational",
+    });
   } catch (error) {
-    return reply.status(500).send({ error: "Internal Server Error" });
+    console.error("Error checking bot status:", error);
+
+    return reply.status(500).send({
+      status: "error",
+      message: "Internal server error",
+    });
   }
 }
