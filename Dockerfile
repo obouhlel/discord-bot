@@ -5,6 +5,7 @@ RUN bun install
 COPY . .
 
 FROM oven/bun:canary-alpine AS runner
+RUN apk add --no-cache curl
 COPY package.json bun.lock ./
 RUN bun install --production
 COPY --from=builder /app .
