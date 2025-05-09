@@ -1,12 +1,13 @@
-import { ChannelType, type GuildMember, type TextChannel } from "discord.js";
-import type { FastifyInstance } from "fastify";
+import type { GuildMember, TextChannel } from "discord.js";
+import type { RedisClient } from "bun";
+import { ChannelType } from "discord.js";
 
 export async function handlerGuildMemberAdd(
   member: GuildMember,
-  fastify: FastifyInstance
+  redis: RedisClient
 ) {
   try {
-    const channelId = await fastify.redis.get(`welcome:${member.guild.id}`);
+    const channelId = await redis.get(`welcome:${member.guild.id}`);
     if (!channelId) return;
 
     const channel = member.guild.channels.cache.get(channelId) as TextChannel;

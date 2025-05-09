@@ -1,10 +1,10 @@
-import { fastify, type FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync } from "fastify";
+import { RedisClient } from "bun";
 import fp from "fastify-plugin";
-import Redis from "ioredis";
 
 declare module "fastify" {
   interface FastifyInstance {
-    redis: Redis;
+    redis: RedisClient;
   }
 }
 
@@ -13,10 +13,10 @@ const redisPlugin: FastifyPluginAsync = fp(async (server) => {
   if (!redisURL) {
     throw new Error("The Redis URL not set");
   }
-  const redis = new Redis(redisURL);
+  const redis = new RedisClient(redisURL);
   server.decorate("redis", redis);
   server.addHook("onClose", async (server) => {
-    server.redis.disconnect();
+    server.redis.close();
   });
 });
 

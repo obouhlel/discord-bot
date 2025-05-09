@@ -1,10 +1,10 @@
-import type { FastifyInstance } from "fastify";
 import type { Interaction } from "discord.js";
+import type { RedisClient } from "bun";
 import { commands } from "../commands";
 
 export async function handlerInteractionCreate(
   interaction: Interaction,
-  fastify: FastifyInstance
+  redis: RedisClient
 ) {
   if (!interaction.isChatInputCommand()) return;
   const command = commands.get(interaction.commandName);
@@ -13,7 +13,7 @@ export async function handlerInteractionCreate(
     return;
   }
   try {
-    await command.execute(interaction, fastify);
+    await command.execute(interaction, redis);
   } catch {
     await interaction.reply("Error server");
   }

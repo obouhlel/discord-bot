@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 import Fastify from "fastify";
-import discordPlugin from "./plugins/discord";
 import routes from "./routes";
 import redisPlugin from "./plugins/redis";
 
@@ -11,7 +10,6 @@ const fastify = Fastify({
 });
 
 fastify.register(redisPlugin);
-fastify.register(discordPlugin);
 fastify.register(routes);
 
 async function start() {

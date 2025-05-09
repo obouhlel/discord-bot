@@ -1,5 +1,5 @@
+import type { RedisClient } from "bun";
 import { InteractionContextType, SlashCommandBuilder } from "discord.js";
-import type { FastifyInstance } from "fastify";
 import type { ChatInputCommandInteraction } from "discord.js";
 
 export const welcome = {
@@ -7,20 +7,17 @@ export const welcome = {
     .setName("welcome")
     .setDescription("Set welcome message on server in current channel")
     .setContexts([InteractionContextType.Guild]),
-  async execute(
-    interaction: ChatInputCommandInteraction,
-    fastify: FastifyInstance
-  ) {
+  async execute(interaction: ChatInputCommandInteraction, redis: RedisClient) {
     const channel = interaction.channel?.toString();
     const channelId = interaction.channelId;
     const key = `welcome:${interaction.guildId!}`;
     try {
-      const value = await fastify.redis.get(key);
+      const value = await redis.get(key);
       if (value && value === channelId) {
         await interaction.reply(`Welcome message is already set in ${channel}`);
         return;
       }
-      await fastify.redis.set(key, channelId);
+      await redis.set(key, channelId);
       if (value) {
         await interaction.reply(
           `Welcome message is update to ${channel} (old: <#${value}>)`
