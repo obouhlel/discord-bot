@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { InteractionContextType, SlashCommandBuilder } from "discord.js";
 import type {
   ChatInputCommandInteraction,
   SlashCommandStringOption,
@@ -13,7 +13,8 @@ export const echo = {
         .setName("message")
         .setDescription("The message to repeat")
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   async execute(interaction: ChatInputCommandInteraction) {
     const message = interaction.options.getString("message", true);
     await interaction.reply(message);
