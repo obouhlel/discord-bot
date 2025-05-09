@@ -11,6 +11,5 @@ RUN bun install --production
 COPY --from=builder /app .
 RUN chown -R bun:bun /home/bun
 USER bun
-RUN bun update:commannds
 EXPOSE 3000
 ENTRYPOINT [ "bun", "run", "bot" ]

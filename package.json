@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch ./src/index.ts",
-    "update:commannds": "bun ./src/scripts/update-slash-commands.ts",
+    "update:commands": "bun ./src/scripts/update-slash-commands.ts",
     "bot": "bun ./src/index.ts"
   },
   "devDependencies": {
