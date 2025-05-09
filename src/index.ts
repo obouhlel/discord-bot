@@ -1,7 +1,5 @@
 import {
-  ChannelType,
   Client,
-  Emoji,
   Events,
   GatewayIntentBits,
   Partials,
@@ -20,9 +18,8 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
-    GatewayIntentBits.DirectMessageTyping,
   ],
-  partials: [Partials.Channel, Partials.Message],
+  partials: [Partials.User, Partials.Channel, Partials.Message],
 });
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
