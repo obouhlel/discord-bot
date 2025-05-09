@@ -5,6 +5,7 @@ services:
     environment:
       - CLIENT_ID=${CLIENT_ID}
       - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - REDIS_URL=${REDIS_URL}
     labels:
       - "coolify.managed=true"
       - "traefik.enable=true"
