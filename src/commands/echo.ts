@@ -1,3 +1,4 @@
+import type { RedisClient } from "bun";
 import { InteractionContextType, SlashCommandBuilder } from "discord.js";
 import type {
   ChatInputCommandInteraction,
@@ -15,7 +16,7 @@ export const echo = {
         .setRequired(true)
     )
     .setContexts([InteractionContextType.Guild]),
-  async execute(interaction: ChatInputCommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction, redis: RedisClient) {
     const message = interaction.options.getString("message", true);
     await interaction.reply(message);
   },

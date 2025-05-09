@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import Fastify from "fastify";
-import discordPlugin from "./plugins/discord-plugin";
 import routes from "./routes";
+import redisPlugin from "./plugins/redis";
 
 dotenv.config();
 
@@ -9,7 +9,7 @@ const fastify = Fastify({
   logger: true,
 });
 
-fastify.register(discordPlugin);
+fastify.register(redisPlugin);
 fastify.register(routes);
 
 async function start() {
