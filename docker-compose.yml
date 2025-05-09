@@ -4,18 +4,3 @@ services:
     build: .
     env_file:
       - .env
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-X",
-          "GET",
-          "https://discord.com/api/v10/applications/${CLIENT_ID}/commands",
-          "-H",
-          "Authorization: Bot ${DISCORD_TOKEN}",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
