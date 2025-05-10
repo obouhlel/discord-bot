@@ -8,7 +8,6 @@ COPY prisma ./prisma
 
 RUN bun install
 RUN bun generate
-RUN bun migrate:prod
 
 COPY src ./src
 
