@@ -10,7 +10,7 @@ export async function handlerMessageCreate(
   const random: number = Math.round(Math.random() * (100 - 1) + 1);
 
   try {
-    if (!message.inGuild()) {
+    if (!message.inGuild() && !message.author.bot) {
       await message.author.dmChannel?.sendTyping();
       const response = await llm.generateMessage(message.content);
       message.author.send(response);
