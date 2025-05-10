@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: on-failure
+    environment:
+      - POSTGRES_HOST=localhost
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
