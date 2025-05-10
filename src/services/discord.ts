@@ -1,25 +1,21 @@
+import type LLMService from "./llm";
 import type { RedisClient } from "bun";
-import {
-  Client,
-  REST,
-  Routes,
-  Events,
-  GatewayIntentBits,
-  Partials,
-} from "discord.js";
+import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
+import { REST, Routes } from "discord.js";
+import { commandsDatas } from "../commands";
 import {
   handlerMessageCreate,
   handlerInteractionCreate,
   handlerGuildMemberAdd,
 } from "../events";
-import { commandsInfo } from "../commands";
 
 export default class DiscordService {
   public client: Client;
   public rest: REST;
   public redis: RedisClient;
+  public llm: LLMService;
 
-  constructor(redis: RedisClient) {
+  constructor(redis: RedisClient, llm: LLMService) {
     this.client = new Client({
       intents: [
         GatewayIntentBits.Guilds,
@@ -36,13 +32,15 @@ export default class DiscordService {
     );
 
     this.redis = redis;
+
+    this.llm = llm;
   }
 
   public async updateCommands() {
     try {
       console.log("🔄 | Updating slash commands...");
       await this.rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
-        body: commandsInfo,
+        body: commandsDatas,
       });
       console.log("✅ | Slash commands updated successfully.");
     } catch (error) {
@@ -51,13 +49,22 @@ export default class DiscordService {
   }
 
   public async events() {
+    // At start
     this.client.once(Events.ClientReady, async () => {
       console.log(`✅ | Client is ready ${this.client.user?.tag}`);
     });
-    this.client.on(Events.MessageCreate, handlerMessageCreate);
+
+    // New message
+    this.client.on(Events.MessageCreate, async (message) => {
+      handlerMessageCreate(message, this.redis, this.llm);
+    });
+
+    // Slash commands
     this.client.on(Events.InteractionCreate, async (interaction) => {
       handlerInteractionCreate(interaction, this.redis);
     });
+
+    // New member in server/guild
     this.client.on(Events.GuildMemberAdd, async (member) => {
       handlerGuildMemberAdd(member, this.redis);
     });
