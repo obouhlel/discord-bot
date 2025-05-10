@@ -9,6 +9,20 @@ export async function handlerMessageCreate(
 ) {
   const random: number = Math.round(Math.random() * (100 - 1) + 1);
 
+  if (message.mentions.has(message.client.user) && message.inGuild()) {
+    const m = message.content
+      .replace(`<@${message.client.user?.id}>`, "")
+      .trim();
+    if (m === "") {
+      message.channel.send(`### Stop to ping me, <@${message.author.id}> !!!`);
+      return;
+    } else {
+      const response = await llm.generateMessage(m);
+      message.channel.send(response);
+      return;
+    }
+  }
+
   if (
     random % 2 &&
     message.content.toLowerCase().includes("quoi") &&
@@ -19,19 +33,5 @@ export async function handlerMessageCreate(
     await redis.set(`feur:${message.author.id}`, String(score));
     message.channel.send("feur");
     return;
-  }
-
-  if (message.mentions.has(message.client.user) && message.inGuild()) {
-    const m = message.content
-      .replace(`<@${message.client.user?.id}>`, "")
-      .trim();
-    if (m === "") {
-      message.channel.send(`# Arrête de me ping !!! <@${message.author.id}>`);
-      return;
-    } else {
-      const response = await llm.generateMessage(m);
-      message.channel.send(response);
-      return;
-    }
   }
 }
