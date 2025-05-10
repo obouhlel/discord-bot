@@ -1,5 +1,9 @@
 import type { RedisClient } from "bun";
-import { InteractionContextType, SlashCommandBuilder } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  InteractionContextType,
+  SlashCommandBuilder,
+} from "discord.js";
 import type {
   ChatInputCommandInteraction,
   SlashCommandStringOption,
@@ -15,7 +19,15 @@ export const echo = {
         .setDescription("The message to repeat")
         .setRequired(true)
     )
-    .setContexts([InteractionContextType.Guild]),
+    .setIntegrationTypes([
+      ApplicationIntegrationType.GuildInstall,
+      ApplicationIntegrationType.UserInstall,
+    ])
+    .setContexts([
+      InteractionContextType.Guild,
+      InteractionContextType.BotDM,
+      InteractionContextType.PrivateChannel,
+    ]),
   async execute(interaction: ChatInputCommandInteraction, redis: RedisClient) {
     const message = interaction.options.getString("message", true);
     await interaction.reply(message);
