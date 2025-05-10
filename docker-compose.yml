@@ -7,6 +7,7 @@ services:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - REDIS_URL=${REDIS_URL}
       - LLM_TOKEN=${LLM_TOKEN}
+      - DATABASE_URL=${DATABASE_URL}
     labels:
       - "coolify.managed=true"
       - "traefik.enable=true"
