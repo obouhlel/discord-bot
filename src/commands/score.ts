@@ -8,9 +8,12 @@ export const score = {
     .setDescription("Get the number of 'feur' triggered")
     .setContexts([InteractionContextType.Guild]),
   async execute(interaction: ChatInputCommandInteraction, redis: RedisClient) {
-    const score = Number(
-      await redis.get(`feur:${interaction.member?.user.id}`)
-    );
-    await interaction.reply(`Ton score de feur est de : ${score}`);
+    try {
+      const score = Number(await redis.get(`feur:${interaction.user.id}`));
+      await interaction.reply(`You score of 'feur' is **${score}**`);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply("Error server");
+    }
   },
 };
