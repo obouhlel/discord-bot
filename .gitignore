@@ -37,4 +37,5 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 config.json
 
 # prisma
+prisma/migrations
 src/generated
