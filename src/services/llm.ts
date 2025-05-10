@@ -7,7 +7,12 @@ export default class LLMService {
     this.client = new InferenceClient(process.env.LLM_TOKEN!);
   }
 
-  async generateMessage(message: string): Promise<string> {
+  private async _generateMessage(
+    message: string,
+    prompt: string,
+    temperature: number,
+    max_tokens: number
+  ): Promise<string> {
     try {
       const chatCompletion = await this.client.chatCompletion({
         provider: "novita",
@@ -15,17 +20,16 @@ export default class LLMService {
         messages: [
           {
             role: "system",
-            content:
-              "Tu es un bot discord, tu peux intéragir avec des utilisateurs de manière random, en pleine discution.",
+            content: prompt,
           },
           {
             role: "user",
             content: message,
           },
         ],
-        temperature: 2,
-        top_p: 0,
-        max_tokens: 512,
+        temperature: temperature,
+        top_p: 0.5,
+        max_tokens: max_tokens,
         stream: false,
       });
 
@@ -38,7 +42,20 @@ export default class LLMService {
       return response;
     } catch (error) {
       console.error("Error :", error);
-      return "Je ne peux plus envoyer de message";
+      return "I can't send message";
     }
+  }
+
+  public async generateMessage(message: string): Promise<string> {
+    const prompt =
+      "You are a bot discord, you can speek in french and english, you interact with member in the channel";
+    return await this._generateMessage(message, prompt, 2, 512);
+  }
+
+  public async generateDMMessage(message: string): Promise<string> {
+    const prompt =
+      "You will help peaple in mathematic and the programming, you explain the problem before to send code, you send code only if the user tell you to send it.";
+
+    return await this._generateMessage(message, prompt, 1, 1024);
   }
 }

@@ -17,29 +17,14 @@ export async function handlerMessageCreate(
       return;
     }
 
-    if (!message.author.bot && random % 2 && message.inGuild()) {
-      await message.channel.sendTyping();
-      const response = await llm.generateMessage(message.content);
-      message.channel.send(response);
-    }
-
     if (
       !message.author.bot &&
       message.mentions.has(message.client.user) &&
       message.inGuild()
     ) {
-      const m = message.content
-        .replace(`<@${message.client.user?.id}>`, "")
-        .trim();
-      if (m === "") {
-        message.channel.send(
-          `### Stop to ping me, <@${message.author.id}> !!!`
-        );
-      } else {
-        await message.channel.sendTyping();
-        const response = await llm.generateMessage(m);
-        message.channel.send(response);
-      }
+      await message.channel.sendTyping();
+      const response = await llm.generateMessage(message.content);
+      message.channel.send(response);
     }
 
     if (
