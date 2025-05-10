@@ -2,16 +2,20 @@ import { ping } from "./ping";
 import { echo } from "./echo";
 import { cuddle } from "./cuddle";
 import { welcome } from "./welcome";
+import { score } from "./score";
 
-export const commandsInfo = [
+export const commandsDatas = [
   ping.data.toJSON(),
   echo.data.toJSON(),
   cuddle.data.toJSON(),
   welcome.data.toJSON(),
+  score.data.toJSON(),
 ];
+
 export const commands = new Map<string, any>([
   [ping.data.name, ping],
   [echo.data.name, echo],
   [cuddle.data.name, cuddle],
   [welcome.data.name, welcome],
+  [score.data.name, score],
 ]);
