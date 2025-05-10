@@ -17,7 +17,7 @@ export async function handlerMessageCreate(
       return;
     }
 
-    if (random % 2 && message.inGuild()) {
+    if (!message.author.bot && random % 2 && message.inGuild()) {
       await message.channel.sendTyping();
       const response = await llm.generateMessage(message.content);
       message.channel.send(response);
