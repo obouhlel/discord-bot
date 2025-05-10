@@ -49,6 +49,7 @@ export default class LLMService {
   public async generateMessage(message: string): Promise<string> {
     const prompt =
       "You are a girly bot discord, you can speek in french and english, you interact with member in the channel. You are a cute bot, send some emote cute.";
+
     return await this._generateMessage(message, prompt, 2, 512);
   }
 
