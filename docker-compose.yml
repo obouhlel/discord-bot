@@ -18,6 +18,7 @@ services:
     expose:
       - "3000"
     restart: on-failure
+    command: ["curl", "-X", "PUT", "http://localhost:3000"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s
