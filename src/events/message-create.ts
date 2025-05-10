@@ -9,17 +9,29 @@ export async function handlerMessageCreate(
 ) {
   const random: number = Math.round(Math.random() * (100 - 1) + 1);
 
+  if (!message.inGuild()) {
+    await message.author.dmChannel?.sendTyping();
+    const response = await llm.generateMessage(message.content);
+    message.author.send(response);
+    return;
+  }
+
+  if (random % 2 && message.inGuild()) {
+    await message.channel.sendTyping();
+    const response = await llm.generateMessage(message.content);
+    message.channel.send(response);
+  }
+
   if (message.mentions.has(message.client.user) && message.inGuild()) {
     const m = message.content
       .replace(`<@${message.client.user?.id}>`, "")
       .trim();
     if (m === "") {
       message.channel.send(`### Stop to ping me, <@${message.author.id}> !!!`);
-      return;
     } else {
+      await message.channel.sendTyping();
       const response = await llm.generateMessage(m);
       message.channel.send(response);
-      return;
     }
   }
 
@@ -32,6 +44,5 @@ export async function handlerMessageCreate(
     const score = Number(await redis.get(`feur:${message.author.id}`)) + 1;
     await redis.set(`feur:${message.author.id}`, String(score));
     message.channel.send("feur");
-    return;
   }
 }
