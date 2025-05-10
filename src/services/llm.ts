@@ -14,6 +14,11 @@ export default class LLMService {
         model: "deepseek-ai/DeepSeek-V3-0324",
         messages: [
           {
+            role: "system",
+            content:
+              "Tu es un bot discord, tu peux intéragir avec des utilisateurs de manière random, en pleine discution.",
+          },
+          {
             role: "user",
             content: message,
           },
