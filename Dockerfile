@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY package.json .
 COPY bun.lock .
+COPY tsconfig.json .
 COPY prisma ./prisma
 
 RUN bun install
@@ -18,6 +19,7 @@ RUN apk add --no-cache curl
 
 COPY package.json .
 COPY bun.lock .
+COPY tsconfig.json .
 
 RUN bun install --production
 
