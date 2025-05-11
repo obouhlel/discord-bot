@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "docker compose -f docker-compose.yml up -d; sleep 3; bun --watch ./src/index.ts",
+    "dev": "docker compose -f docker-compose.dev.yml up -d; sleep 3; bun --watch ./src/index.ts",
     "server": "bun ./src/index.ts",
     "migrate:dev": "bunx prisma migrate dev --name init",
     "migrate:prod": "bunx prisma migrate deploy",

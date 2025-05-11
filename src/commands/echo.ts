@@ -16,7 +16,7 @@ export const echo = {
     .addStringOption((option: SlashCommandStringOption) =>
       option
         .setName("message")
-        .setDescription("The message to repeat")
+        .setDescription("The message to reply")
         .setRequired(true)
     )
     .setIntegrationTypes([
