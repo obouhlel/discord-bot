@@ -3,6 +3,8 @@ import Fastify from "fastify";
 import routes from "routes";
 import redisPlugin from "plugins/redis";
 import prismaPlugin from "plugins/prisma";
+import cors from "@fastify/cors";
+import helmet from "@fastify/helmet";
 
 dotenv.config();
 
@@ -10,6 +12,10 @@ const fastify = Fastify({
   logger: true,
 });
 
+fastify.register(cors, {
+  origin: ["http://localhost:3000"],
+});
+fastify.register(helmet);
 fastify.register(prismaPlugin);
 fastify.register(redisPlugin);
 fastify.register(routes);
