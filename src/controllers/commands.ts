@@ -2,9 +2,12 @@ import { Routes, REST } from "discord.js";
 import type { FastifyReply } from "fastify";
 import type DiscordService from "services/discord";
 
-export async function commandsGET(rest: REST, reply: FastifyReply) {
+export async function commandsGET(
+  discord: DiscordService,
+  reply: FastifyReply
+) {
   try {
-    const commands = await rest.get(
+    const commands = await discord.rest.get(
       Routes.applicationCommands(process.env.CLIENT_ID!)
     );
     await reply.status(200).send({

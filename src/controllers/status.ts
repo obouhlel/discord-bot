@@ -1,16 +1,17 @@
-import { Routes, type Client, type REST } from "discord.js";
+import { Routes } from "discord.js";
 import type { FastifyReply } from "fastify";
+import type DiscordService from "services/discord";
 
-export async function status(client: Client, rest: REST, reply: FastifyReply) {
+export async function status(discord: DiscordService, reply: FastifyReply) {
   try {
-    if (!client.isReady()) {
+    if (!discord.client.isReady()) {
       return reply.status(503).send({
         status: "error",
         message: "Bot is not ready",
       });
     }
 
-    const commands = await rest.get(
+    const commands = await discord.rest.get(
       Routes.applicationCommands(process.env.CLIENT_ID!)
     );
 
