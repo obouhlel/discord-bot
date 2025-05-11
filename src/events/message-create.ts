@@ -5,7 +5,7 @@ export async function handlerMessageCreate(message: Message) {
   const client = message.client as CustomDiscordClient;
   const redis = client.redis;
   const llm = client.llm;
-  const random = client.random.next();
+  const random = (client.random.next() % 2) + 1;
 
   try {
     if (!message.inGuild() && !message.author.bot) {
