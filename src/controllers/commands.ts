@@ -1,6 +1,6 @@
 import { Routes, REST } from "discord.js";
 import type { FastifyReply } from "fastify";
-import type DiscordService from "../services/discord";
+import type DiscordService from "services/discord";
 
 export async function commandsGET(rest: REST, reply: FastifyReply) {
   try {

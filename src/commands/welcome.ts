@@ -1,10 +1,10 @@
-import type { RedisClient } from "bun";
 import {
   ApplicationIntegrationType,
   InteractionContextType,
   SlashCommandBuilder,
 } from "discord.js";
 import type { ChatInputCommandInteraction } from "discord.js";
+import type CustomDiscordClient from "types/custom-discord-client";
 
 export const welcome = {
   data: new SlashCommandBuilder()
@@ -12,10 +12,13 @@ export const welcome = {
     .setDescription("Set welcome message on server in current channel")
     .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
     .setContexts([InteractionContextType.Guild]),
-  async execute(interaction: ChatInputCommandInteraction, redis: RedisClient) {
+  async execute(interaction: ChatInputCommandInteraction) {
+    const client = interaction.client as CustomDiscordClient;
+    const redis = client.redis;
     const channel = interaction.channel?.toString();
     const channelId = interaction.channelId;
     const key = `welcome:${interaction.guildId!}`;
+
     try {
       const value = await redis.get(key);
       if (value && value === channelId) {

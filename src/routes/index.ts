@@ -1,11 +1,11 @@
 import type { FastifyInstance } from "fastify";
-import { status, commandsGET, commandsPUT } from "../controllers";
-import DiscordService from "../services/discord";
-import LLMService from "../services/llm";
+import { status, commandsGET, commandsPUT } from "controllers";
+import DiscordService from "services/discord";
+import LLMService from "services/llm";
 
 export default async function routes(fastify: FastifyInstance) {
   const llm = new LLMService();
-  const discord = new DiscordService(fastify.redis, llm);
+  const discord = new DiscordService(fastify.redis, llm, fastify.prisma);
 
   await discord.client.login();
 

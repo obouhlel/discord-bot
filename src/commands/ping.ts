@@ -4,7 +4,6 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import type { ChatInputCommandInteraction } from "discord.js";
-import type { RedisClient } from "bun";
 
 export const ping = {
   data: new SlashCommandBuilder()
@@ -15,7 +14,7 @@ export const ping = {
       ApplicationIntegrationType.UserInstall,
     ])
     .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild]),
-  async execute(interaction: ChatInputCommandInteraction, redis: RedisClient) {
+  async execute(interaction: ChatInputCommandInteraction) {
     await interaction.reply("Pong!");
   },
 };

@@ -1,4 +1,3 @@
-import type { RedisClient } from "bun";
 import {
   ApplicationIntegrationType,
   InteractionContextType,
@@ -28,7 +27,7 @@ export const echo = {
       InteractionContextType.BotDM,
       InteractionContextType.PrivateChannel,
     ]),
-  async execute(interaction: ChatInputCommandInteraction, redis: RedisClient) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const message = interaction.options.getString("message", true);
     await interaction.reply(message);
   },

@@ -1,13 +1,11 @@
-import type { RedisClient } from "bun";
 import type { Message } from "discord.js";
-import type LLMService from "../services/llm";
+import CustomDiscordClient from "types/custom-discord-client";
 
-export async function handlerMessageCreate(
-  message: Message,
-  redis: RedisClient,
-  llm: LLMService
-) {
-  const random: number = Math.round(Math.random() * (100 - 1) + 1);
+export async function handlerMessageCreate(message: Message) {
+  const client = message.client as CustomDiscordClient;
+  const redis = client.redis;
+  const llm = client.llm;
+  const random = client.random.next();
 
   try {
     if (!message.inGuild() && !message.author.bot) {

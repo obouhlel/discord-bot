@@ -1,4 +1,3 @@
-import type { RedisClient } from "bun";
 import type { ChatInputCommandInteraction } from "discord.js";
 import {
   ApplicationIntegrationType,
@@ -19,7 +18,7 @@ export const cuddle = {
       InteractionContextType.PrivateChannel,
       InteractionContextType.Guild,
     ]),
-  async execute(interaction: ChatInputCommandInteraction, redis: RedisClient) {
+  async execute(interaction: ChatInputCommandInteraction) {
     try {
       const { data } = await axios.get("https://api.waifu.pics/sfw/cuddle");
       await interaction.reply(data.url);

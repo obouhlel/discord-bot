@@ -1,8 +1,11 @@
 import type LLMService from "./llm";
 import type { RedisClient } from "bun";
-import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
+import type { PrismaClient } from "generated/prisma/index-browser";
+import CustomDiscordClient from "types/custom-discord-client";
+import { Events, GatewayIntentBits, Partials } from "discord.js";
 import { REST, Routes } from "discord.js";
-import { commandsDatas } from "../commands";
+import { commandsDatas } from "commands";
+import Random from "utils/random";
 import {
   handlerMessageCreate,
   handlerInteractionCreate,
@@ -10,13 +13,11 @@ import {
 } from "../events";
 
 export default class DiscordService {
-  public client: Client;
+  public client: CustomDiscordClient;
   public rest: REST;
-  public redis: RedisClient;
-  public llm: LLMService;
 
-  constructor(redis: RedisClient, llm: LLMService) {
-    this.client = new Client({
+  constructor(redis: RedisClient, llm: LLMService, prisma: PrismaClient) {
+    this.client = new CustomDiscordClient({
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
@@ -31,9 +32,12 @@ export default class DiscordService {
       process.env.DISCORD_TOKEN!
     );
 
-    this.redis = redis;
+    const random = new Random();
 
-    this.llm = llm;
+    this.client.redis = redis;
+    this.client.llm = llm;
+    this.client.prisma = prisma;
+    this.client.random = random;
   }
 
   public async updateCommands() {
@@ -55,18 +59,12 @@ export default class DiscordService {
     });
 
     // New message
-    this.client.on(Events.MessageCreate, async (message) => {
-      handlerMessageCreate(message, this.redis, this.llm);
-    });
+    this.client.on(Events.MessageCreate, handlerMessageCreate);
 
     // Slash commands
-    this.client.on(Events.InteractionCreate, async (interaction) => {
-      handlerInteractionCreate(interaction, this.redis);
-    });
+    this.client.on(Events.InteractionCreate, handlerInteractionCreate);
 
     // New member in server/guild
-    this.client.on(Events.GuildMemberAdd, async (member) => {
-      handlerGuildMemberAdd(member, this.redis);
-    });
+    this.client.on(Events.GuildMemberAdd, handlerGuildMemberAdd);
   }
 }

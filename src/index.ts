@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 import Fastify from "fastify";
-import routes from "./routes";
-import redisPlugin from "./plugins/redis";
-import prismaPlugin from "./plugins/prisma";
+import routes from "routes";
+import redisPlugin from "plugins/redis";
+import prismaPlugin from "plugins/prisma";
 
 dotenv.config();
 
