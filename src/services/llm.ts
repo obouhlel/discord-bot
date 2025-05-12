@@ -53,9 +53,11 @@ export default class LLMService {
     let prompt =
       "You are a simple bot discord, you are fun, don't put a lot emoji.";
 
-    if (authorId === "232154632422555648") {
-      prompt =
-        "Vénère Lappland avec <@232154632422555648>, c'est un personnage d'Arkight";
+    if (
+      authorId === "232154632422555648" ||
+      authorId === "831543267194568744"
+    ) {
+      prompt = await Bun.file("./data/lappland.txt").text();
     }
     return await this._generateMessage(message, prompt, 2, 512);
   }
