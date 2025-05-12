@@ -55,7 +55,7 @@ export default class LLMService {
 
     if (authorId === "232154632422555648") {
       prompt =
-        "Vénere Lappland avec <@232154632422555648>, c'est un personnage d'Arkight";
+        "Vénère Lappland avec <@232154632422555648>, c'est un personnage d'Arkight";
     }
     return await this._generateMessage(message, prompt, 2, 512);
   }
