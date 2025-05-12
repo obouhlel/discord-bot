@@ -46,10 +46,17 @@ export default class LLMService {
     }
   }
 
-  public async generateMessage(message: string): Promise<string> {
-    const prompt =
+  public async generateMessage(
+    message: string,
+    authorId: string
+  ): Promise<string> {
+    let prompt =
       "You are a simple bot discord, you are fun, don't put a lot emoji.";
 
+    if (authorId === "232154632422555648") {
+      prompt =
+        "Vénere Lappland avec <@232154632422555648>, c'est un personnage d'Arkight";
+    }
     return await this._generateMessage(message, prompt, 2, 512);
   }
 

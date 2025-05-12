@@ -10,7 +10,7 @@ export async function handlerMessageCreate(message: Message) {
   try {
     if (!message.inGuild() && !message.author.bot) {
       await message.author.dmChannel?.sendTyping();
-      const response = await llm.generateMessage(message.content);
+      const response = await llm.generateDMMessage(message.content);
       message.author.send(response);
       return;
     }
@@ -21,7 +21,10 @@ export async function handlerMessageCreate(message: Message) {
       message.inGuild()
     ) {
       await message.channel.sendTyping();
-      const response = await llm.generateMessage(message.content);
+      const response = await llm.generateMessage(
+        message.content,
+        message.author.id
+      );
       message.channel.send(response);
     }
 

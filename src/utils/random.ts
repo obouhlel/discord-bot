@@ -1,9 +1,6 @@
 // LCG: Linear Congruential Generator
 export default class Random {
   private seed: number;
-  private readonly multiplier: number = 1664525;
-  private readonly increment: number = 1013904223;
-  private readonly modulus: number = 2 ** 32;
 
   constructor();
   constructor(seed: number);
@@ -17,7 +14,9 @@ export default class Random {
   }
 
   next(): number {
-    this.seed = (this.multiplier * this.seed + this.increment) % this.modulus;
-    return this.seed;
+    this.seed ^= this.seed << 13;
+    this.seed ^= this.seed >> 17;
+    this.seed ^= this.seed << 5;
+    return this.seed < 0 ? ~this.seed + 1 : this.seed;
   }
 }
