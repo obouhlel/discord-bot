@@ -19,7 +19,6 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@fastify/cors": "^11.0.1",
     "@fastify/helmet": "^13.0.1",
     "@huggingface/inference": "^3.12.1",
     "@prisma/client": "^6.7.0",

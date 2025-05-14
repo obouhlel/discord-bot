@@ -1,8 +1,8 @@
-import { Routes, REST } from "discord.js";
+import { Routes } from "discord.js";
 import type { FastifyReply } from "fastify";
 import type DiscordService from "services/discord";
 
-export async function commandsGET(
+export async function getCommands(
   discord: DiscordService,
   reply: FastifyReply
 ) {
@@ -22,7 +22,7 @@ export async function commandsGET(
   }
 }
 
-export async function commandsPUT(
+export async function updateCommands(
   discord: DiscordService,
   reply: FastifyReply
 ) {

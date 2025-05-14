@@ -1,2 +1,3 @@
 export { status } from "./status";
-export { commandsGET, commandsPUT } from "./commands";
+export { auth } from "./auth";
+export { getCommands, updateCommands } from "./commands";
