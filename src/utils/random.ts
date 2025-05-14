@@ -1,4 +1,4 @@
-// LCG: Linear Congruential Generator
+// Xorshifting
 export default class Random {
   private seed: number;
 

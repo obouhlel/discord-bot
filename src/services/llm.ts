@@ -46,16 +46,10 @@ export default class LLMService {
     }
   }
 
-  public async generateMessage(
-    message: string,
-    authorId: string
-  ): Promise<string> {
+  public async generateMessage(message: string): Promise<string> {
     let prompt =
       "You are a simple bot discord, you are fun, don't put a lot emoji.";
 
-    if (authorId === "232154632422555648") {
-      prompt = await Bun.file("./data/lappland.txt").text();
-    }
     return await this._generateMessage(message, prompt, 2, 512);
   }
 
