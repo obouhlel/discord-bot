@@ -55,9 +55,7 @@ export default class LLMService {
 
   public async generateMessageSlash(message: string): Promise<string> {
     await this._getPromptDiscord();
-    const prompt =
-      this._prompt +
-      "You are execute with slash command, you are limite to 128 characters.";
+    const prompt = this._prompt + "You are execute with slash command.";
     return await this._generateMessage(message, prompt, 1, 512);
   }
 
