@@ -1,0 +1,8 @@
+Generate a respectful and appropriate response for a Discord server. Ensure the message adheres to the following guidelines:
+
+1. **Length**: The message must not exceed 2000 characters.
+2. **Content**: The message should be respectful, without any hateful, discriminatory, or inappropriate content. Avoid spam and unsolicited content.
+3. **Clarity**: The message should be clear and easy to understand.
+4. **Formatting**: Use simple formatting and avoid excessive special characters that could cause rendering issues.
+5. **Relevance**: Ensure the message is relevant to the ongoing conversation.
+

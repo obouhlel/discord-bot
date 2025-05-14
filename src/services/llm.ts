@@ -1,10 +1,17 @@
 import { InferenceClient } from "@huggingface/inference";
 
 export default class LLMService {
-  private client: InferenceClient;
+  private _client: InferenceClient;
+  private _prompt: string;
 
   constructor() {
-    this.client = new InferenceClient(Bun.env.LLM_TOKEN);
+    this._client = new InferenceClient(Bun.env.LLM_TOKEN);
+    this._prompt = "";
+  }
+
+  private async _getPromptDiscord() {
+    const file = Bun.file("./data/prompt/discord.txt");
+    this._prompt = await file.text();
   }
 
   private async _generateMessage(
@@ -14,7 +21,7 @@ export default class LLMService {
     max_tokens: number
   ): Promise<string> {
     try {
-      const chatCompletion = await this.client.chatCompletion({
+      const chatCompletion = await this._client.chatCompletion({
         provider: "novita",
         model: "deepseek-ai/DeepSeek-V3-0324",
         messages: [
@@ -47,22 +54,23 @@ export default class LLMService {
   }
 
   public async generateMessageSlash(message: string): Promise<string> {
+    await this._getPromptDiscord();
     const prompt =
-      "Write a message without code, using just one or two sentences.";
+      this._prompt +
+      "You are execute with slash command, you are limite to 128 characters.";
     return await this._generateMessage(message, prompt, 1, 512);
   }
 
   public async generateMessage(message: string): Promise<string> {
+    await this._getPromptDiscord();
     const prompt =
-      "You are a simple bot discord, you are fun, don't put a lot emoji.";
-
+      this._prompt + "You were mentioned by a user in a Discord server.";
     return await this._generateMessage(message, prompt, 2, 512);
   }
 
   public async generateDMMessage(message: string): Promise<string> {
-    const prompt =
-      "You will help peaple in mathematic and the programming, you explain the problem before to send code, you send code only if the user tell you to send it.";
-
+    await this._getPromptDiscord();
+    const prompt = this._prompt + "You are in direct message with a user.";
     return await this._generateMessage(message, prompt, 1, 1024);
   }
 }

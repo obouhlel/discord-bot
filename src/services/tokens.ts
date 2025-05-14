@@ -1,16 +1,16 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 export default class TokenService {
-  private tokens: Set<string>;
+  private _tokens: Set<string>;
 
   constructor() {
-    this.tokens = new Set();
+    this._tokens = new Set();
   }
 
   public generateToken(length: number = 32): string {
     const bytes = new Uint8Array(length);
     const token = crypto.getRandomValues(bytes).toHex();
-    this.tokens.add(token);
+    this._tokens.add(token);
     return token;
   }
 
@@ -31,13 +31,13 @@ export default class TokenService {
       return;
     }
 
-    if (!this.tokens.has(token)) {
+    if (!this._tokens.has(token)) {
       reply.code(401).send({ error: "Invalid token" });
     }
   }
 
   public invalidateToken(token: string, reply: FastifyReply) {
-    this.tokens.delete(token);
+    this._tokens.delete(token);
     reply.code(201).send({ success: "Token delete" });
   }
 }
