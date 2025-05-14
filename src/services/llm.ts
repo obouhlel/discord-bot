@@ -4,7 +4,7 @@ export default class LLMService {
   private client: InferenceClient;
 
   constructor() {
-    this.client = new InferenceClient(process.env.LLM_TOKEN!);
+    this.client = new InferenceClient(Bun.env.LLM_TOKEN!);
   }
 
   private async _generateMessage(

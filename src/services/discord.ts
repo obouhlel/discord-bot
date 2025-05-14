@@ -28,9 +28,7 @@ export default class DiscordService {
       partials: [Partials.User, Partials.Channel, Partials.Message],
     });
 
-    this.rest = new REST({ version: "10" }).setToken(
-      process.env.DISCORD_TOKEN!
-    );
+    this.rest = new REST({ version: "10" }).setToken(Bun.env.DISCORD_TOKEN!);
 
     const random = new Random();
 
@@ -43,7 +41,7 @@ export default class DiscordService {
   public async updateCommands() {
     try {
       console.log("🔄 | Updating slash commands...");
-      await this.rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
+      await this.rest.put(Routes.applicationCommands(Bun.env.CLIENT_ID!), {
         body: commandsDatas,
       });
       console.log("✅ | Slash commands updated successfully.");

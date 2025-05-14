@@ -9,7 +9,7 @@ declare module "fastify" {
 }
 
 const redisPlugin: FastifyPluginAsync = fp(async (server) => {
-  const redisURL = process.env.REDIS_URL;
+  const redisURL = Bun.env.REDIS_URL;
   if (!redisURL) {
     throw new Error("The Redis URL not set");
   }

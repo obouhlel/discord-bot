@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import Fastify from "fastify";
 import routes from "routes";
 import prismaPlugin from "plugins/prisma";
@@ -7,8 +6,6 @@ import llmPlugin from "plugins/llm";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import discordPlugin from "plugins/discord";
-
-dotenv.config();
 
 const fastify = Fastify({
   logger: true,

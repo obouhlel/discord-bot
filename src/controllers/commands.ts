@@ -8,7 +8,7 @@ export async function commandsGET(
 ) {
   try {
     const commands = await discord.rest.get(
-      Routes.applicationCommands(process.env.CLIENT_ID!)
+      Routes.applicationCommands(Bun.env.CLIENT_ID!)
     );
     await reply.status(200).send({
       commands: commands,

@@ -12,7 +12,7 @@ export async function status(discord: DiscordService, reply: FastifyReply) {
     }
 
     const commands = await discord.rest.get(
-      Routes.applicationCommands(process.env.CLIENT_ID!)
+      Routes.applicationCommands(Bun.env.CLIENT_ID!)
     );
 
     return reply.status(200).send({
