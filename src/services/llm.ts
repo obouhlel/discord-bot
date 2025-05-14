@@ -46,8 +46,14 @@ export default class LLMService {
     }
   }
 
+  public async generateMessageSlash(message: string): Promise<string> {
+    const prompt =
+      "Write a message without code, using just one or two sentences.";
+    return await this._generateMessage(message, prompt, 1, 512);
+  }
+
   public async generateMessage(message: string): Promise<string> {
-    let prompt =
+    const prompt =
       "You are a simple bot discord, you are fun, don't put a lot emoji.";
 
     return await this._generateMessage(message, prompt, 2, 512);

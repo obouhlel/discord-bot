@@ -31,7 +31,7 @@ export const llm = {
     try {
       const { llm } = interaction.client as CustomDiscordClient;
       const prompt = interaction.options.getString("prompt", true);
-      const message = await llm.generateMessage(prompt);
+      const message = await llm.generateMessageSlash(prompt);
       await interaction.reply(message);
     } catch {
       console.error("Error with the command /llm");
