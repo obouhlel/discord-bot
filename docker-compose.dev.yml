@@ -1,8 +1,13 @@
 services:
   db:
-    container_name: postgres
+    container_name: postgres_discord
     image: postgres:16-alpine
     restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5  
     environment:
       - POSTGRES_HOST=localhost
       - POSTGRES_PORT=5432
@@ -11,3 +16,15 @@ services:
       - POSTGRES_DB=postgres
     ports:
       - 5432:5432
+  redis:
+    container_name: redis_discord
+    image: redis:alpine3.21
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    command: ["redis-server"]
+    ports:
+      - 6379:6379
