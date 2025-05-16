@@ -3,4 +3,6 @@ src/generated
 .env
 .env.example
 .gitignore
+*.yml
+Dockerfile
 README.md
