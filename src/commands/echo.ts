@@ -16,7 +16,7 @@ export const echo = {
       option
         .setName("message")
         .setDescription("The message to reply")
-        .setRequired(true)
+        .setRequired(true),
     )
     .setIntegrationTypes([
       ApplicationIntegrationType.GuildInstall,

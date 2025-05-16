@@ -17,7 +17,7 @@ export const llm = {
       option
         .setName("prompt")
         .setDescription("The prompt for the AI")
-        .setRequired(true)
+        .setRequired(true),
     )
     .setIntegrationTypes([
       ApplicationIntegrationType.GuildInstall,

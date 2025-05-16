@@ -4,7 +4,7 @@ import type DiscordService from "services/discord";
 
 export async function status(
   discord: DiscordService,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     if (!discord.client.isReady()) {
@@ -16,7 +16,7 @@ export async function status(
     }
 
     const commands = await discord.rest.get(
-      Routes.applicationCommands(Bun.env.CLIENT_ID)
+      Routes.applicationCommands(Bun.env.CLIENT_ID),
     );
 
     reply.status(200).send({

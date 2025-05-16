@@ -11,7 +11,7 @@ declare module "fastify" {
 const llmPlugin = fp(function (
   server: FastifyInstance,
   opts: FastifyPluginOptions,
-  done: () => void
+  done: () => void,
 ) {
   const llm = new LLMService();
   server.decorate("llm", llm);

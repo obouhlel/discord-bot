@@ -21,10 +21,12 @@ export default async function routes(fastify: FastifyInstance) {
     "/commands/update",
     {
       // eslint-disable-next-line
-      preHandler: async (request, reply) => { token.verifyToken(request, reply); },
+      preHandler: async (request, reply) => {
+        token.verifyToken(request, reply);
+      },
     },
     async (_, reply) => {
       return updateCommands(discord, reply);
-    }
+    },
   );
 }

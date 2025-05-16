@@ -11,7 +11,7 @@ declare module "fastify" {
 const tokenPlugin = fp(function (
   server: FastifyInstance,
   opts: FastifyPluginOptions,
-  done: () => void
+  done: () => void,
 ) {
   const token = new TokenService();
   server.decorate("token", token);

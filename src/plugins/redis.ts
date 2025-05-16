@@ -11,7 +11,7 @@ declare module "fastify" {
 const redisPlugin = fp(function (
   server: FastifyInstance,
   opts: FastifyPluginOptions,
-  done: () => void
+  done: () => void,
 ) {
   const redisURL = Bun.env.REDIS_URL;
   if (!redisURL) {

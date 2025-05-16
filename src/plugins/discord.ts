@@ -11,7 +11,7 @@ declare module "fastify" {
 const discordPlugin = fp(function (
   server: FastifyInstance,
   opts: FastifyPluginOptions,
-  done: () => void
+  done: () => void,
 ) {
   const discord = new DiscordService(server.redis, server.llm, server.prisma);
   server.decorate("discord", discord);

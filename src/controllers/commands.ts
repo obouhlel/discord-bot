@@ -4,11 +4,11 @@ import type DiscordService from "services/discord";
 
 export async function getCommands(
   discord: DiscordService,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const commands = await discord.rest.get(
-      Routes.applicationCommands(Bun.env.CLIENT_ID)
+      Routes.applicationCommands(Bun.env.CLIENT_ID),
     );
     await reply.status(200).send({
       commands: commands,
@@ -24,7 +24,7 @@ export async function getCommands(
 
 export async function updateCommands(
   discord: DiscordService,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     await discord.updateCommands();

@@ -4,7 +4,7 @@ import type TokenService from "services/tokens";
 export async function auth(
   tokenService: TokenService,
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { username, password } = request.body as {
     username: string;

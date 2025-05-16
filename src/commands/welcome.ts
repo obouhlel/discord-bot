@@ -29,7 +29,7 @@ export const welcome = {
       await redis.set(key, channelId);
       if (value) {
         await interaction.reply(
-          `Welcome message is update to ${channel} (old: <#${value}>)`
+          `Welcome message is update to ${channel} (old: <#${value}>)`,
         );
       } else {
         await interaction.reply(`Welcome message is set to ${channel}`);

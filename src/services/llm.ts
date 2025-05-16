@@ -18,7 +18,7 @@ export default class LLMService {
     message: string,
     prompt: string,
     temperature: number,
-    max_tokens: number
+    max_tokens: number,
   ): Promise<string> {
     try {
       const chatCompletion = await this._client.chatCompletion({

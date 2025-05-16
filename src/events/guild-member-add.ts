@@ -13,9 +13,7 @@ export async function guildMemberAdd(member: GuildMember): Promise<void> {
     const channel = member.guild.channels.cache.get(channelId);
     if (!channel || channel.type !== ChannelType.GuildText) return;
 
-    await channel.send(
-      `Bienvenue sur le serveur, <@${member.user.id}>! 🎉`
-    );
+    await channel.send(`Bienvenue sur le serveur, <@${member.user.id}>! 🎉`);
     return;
   } catch (error) {
     console.error("Erreur lors de l'envoi du message de bienvenue :", error);
