@@ -21,7 +21,7 @@ COPY package.json .
 COPY bun.lock .
 COPY tsconfig.json .
 
-RUN bun install --production
+RUN bun install
 
 COPY ./data ./data
 COPY --from=builder /app .
