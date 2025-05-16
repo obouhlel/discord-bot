@@ -25,9 +25,5 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
-
-    // Directories for production
-    "outDir": "./dist",
-    "rootDir": "./src",
   }
 }

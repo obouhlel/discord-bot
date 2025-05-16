@@ -4,27 +4,34 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "docker compose -f docker-compose.dev.yml up -d; sleep 3; bun --watch ./src/index.ts",
+    "dev": "docker compose -f docker-compose.dev.yml up -d && sleep 3 && bun --hot src/index.ts",
+    "lint": "eslint src --ignore-pattern 'src/generated'",
+    "format:check": "prettier --check .",
     "server": "bun ./src/index.ts",
     "migrate:dev": "bunx prisma migrate dev --name init",
     "migrate:prod": "bunx prisma migrate deploy",
     "generate": "bunx prisma generate"
   },
   "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "@stylistic/eslint-plugin": "^4.2.0",
     "@types/bun": "latest",
-    "eslint": "^9.26.0",
-    "prisma": "^6.7.0"
+    "@types/eslint": "^9.6.1",
+    "@types/eslint__js": "^8.42.3",
+    "prisma": "^6.8.1",
+    "typescript-eslint": "^8.32.1"
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "@fastify/helmet": "^13.0.1",
-    "@huggingface/inference": "^3.12.1",
-    "@prisma/client": "^6.7.0",
+    "@huggingface/inference": "^3.13.1",
+    "@prisma/client": "^6.8.1",
     "axios": "^1.9.0",
     "discord.js": "^14.19.3",
-    "fastify": "^5.3.2",
+    "eslint": "^9.26.0",
+    "fastify": "^5.3.3",
     "fastify-plugin": "^5.0.1"
   }
 }
