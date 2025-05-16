@@ -7,7 +7,7 @@ env:
   IMAGE_NAME: "obouhlel/discord-bot"
 
 jobs:
-  amd64:
+  deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
