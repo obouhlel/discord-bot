@@ -9,22 +9,14 @@ import llmPlugin from "plugins/llm";
 import discordPlugin from "plugins/discord";
 import tokenPlugin from "plugins/token";
 
-const envToLogger = {
-  development: {
-    transport: {
-      target: "pino-pretty",
-      options: {
-        translateTime: "HH:MM:ss Z",
-        ignore: "pid,hostname",
-      },
-    },
-  },
-  production: true,
-  test: false,
-};
+// hooks
+import { Events } from "discord.js";
+import { messageCreate } from "events/message-create";
+import { interactionCreate } from "events/interaction-create";
+import { guildMemberAdd } from "events/guild-member-add";
 
 const fastify = Fastify({
-  logger: envToLogger[Bun.env.NODE_ENV as keyof typeof envToLogger] ?? true,
+  logger: true,
 });
 
 fastify.register(helmet);
@@ -37,7 +29,23 @@ fastify.register(routes);
 
 fastify.addHook("onReady", async function () {
   await fastify.discord.client.login();
-  await fastify.discord.events();
+
+  fastify.discord.client.once(Events.ClientReady, () => {
+    if (!fastify.discord.client.user) return;
+    console.log(`✅ | Client is ready ${fastify.discord.client.user.tag}`);
+  });
+
+  // New message
+  // eslint-disable-next-line
+  fastify.discord.client.on(Events.MessageCreate, messageCreate);
+
+  // Slash commands
+  // eslint-disable-next-line
+  fastify.discord.client.on(Events.InteractionCreate, interactionCreate);
+
+  // New member in server/guild
+  // eslint-disable-next-line
+  fastify.discord.client.on(Events.GuildMemberAdd, guildMemberAdd);
 });
 
 async function start() {
@@ -49,4 +57,6 @@ async function start() {
   }
 }
 
-start();
+start().catch((error: unknown) => {
+  console.error(error);
+});

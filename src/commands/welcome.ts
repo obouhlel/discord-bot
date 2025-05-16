@@ -13,11 +13,12 @@ export const welcome = {
     .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
     .setContexts([InteractionContextType.Guild]),
   async execute(interaction: ChatInputCommandInteraction) {
+    if (!interaction.guildId || !interaction.channel) return;
     const client = interaction.client as CustomDiscordClient;
     const redis = client.redis;
-    const channel = interaction.channel?.toString();
+    const channel = interaction.channel.toString();
     const channelId = interaction.channelId;
-    const key = `welcome:${interaction.guildId!}`;
+    const key = `welcome:${interaction.guildId}`;
 
     try {
       const value = await redis.get(key);

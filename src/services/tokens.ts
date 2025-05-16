@@ -7,7 +7,7 @@ export default class TokenService {
     this._tokens = new Set();
   }
 
-  public generateToken(length: number = 32): string {
+  public generateToken(length = 32): string {
     const bytes = new Uint8Array(length);
     const token = crypto.getRandomValues(bytes).toHex();
     this._tokens.add(token);
@@ -15,11 +15,11 @@ export default class TokenService {
   }
 
   public verifyToken(request: FastifyRequest, reply: FastifyReply) {
-    const authHeader = request.headers["authorization"];
+    const authHeader = request.headers.authorization;
 
     if (request.hostname === "localhost") return;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader?.startsWith("Bearer ")) {
       reply.code(401).send({ error: "Token missing of invalid" });
       return;
     }

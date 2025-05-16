@@ -2,9 +2,6 @@
 export default class Random {
   private seed: number;
 
-  constructor();
-  constructor(seed: number);
-
   constructor(seed?: number) {
     if (!seed) {
       this.seed = Math.round(Math.random() * 1000);

@@ -1,7 +1,7 @@
 import type { Message } from "discord.js";
 import CustomDiscordClient from "types/custom-discord-client";
 
-export async function handlerMessageCreate(message: Message) {
+export async function messageCreate(message: Message): Promise<void> {
   const client = message.client as CustomDiscordClient;
   const redis = client.redis;
   const llm = client.llm;
@@ -11,7 +11,7 @@ export async function handlerMessageCreate(message: Message) {
     if (!message.inGuild() && !message.author.bot) {
       await message.author.dmChannel?.sendTyping();
       const response = await llm.generateDMMessage(message.content);
-      message.author.send(response);
+      await message.author.send(response);
       return;
     }
 
@@ -21,11 +21,8 @@ export async function handlerMessageCreate(message: Message) {
       message.inGuild()
     ) {
       await message.channel.sendTyping();
-      const response = await llm.generateMessage(
-        message.content,
-        message.author.id
-      );
-      message.channel.send(response);
+      const response = await llm.generateMessage(message.content);
+      await message.channel.send(response);
     }
 
     if (
@@ -36,7 +33,7 @@ export async function handlerMessageCreate(message: Message) {
     ) {
       const score = Number(await redis.get(`feur:${message.author.id}`)) + 1;
       await redis.set(`feur:${message.author.id}`, String(score));
-      message.channel.send("feur");
+      await message.channel.send("feur");
     }
   } catch (error) {
     console.error(error);

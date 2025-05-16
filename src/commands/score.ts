@@ -17,7 +17,7 @@ export const score = {
     const redis = client.redis;
     try {
       const score = Number(await redis.get(`feur:${interaction.user.id}`));
-      await interaction.reply(`You score of 'feur' is **${score}**`);
+      await interaction.reply(`You score of 'feur' is **${score.toString()}**`);
     } catch (error) {
       console.error(error);
       await interaction.reply("Error server");

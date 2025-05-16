@@ -1,3 +1,4 @@
+import type { Command } from "types/command";
 import { ping } from "./ping";
 import { echo } from "./echo";
 import { cuddle } from "./cuddle";
@@ -14,7 +15,7 @@ export const commandsDatas = [
   llm.data.toJSON(),
 ];
 
-export const commands = new Map<string, any>([
+export const commands = new Map<string, Command>([
   [ping.data.name, ping],
   [echo.data.name, echo],
   [cuddle.data.name, cuddle],

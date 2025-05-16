@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { auth, status, getCommands, updateCommands } from "controllers";
 
+// eslint-disable-next-line
 export default async function routes(fastify: FastifyInstance) {
   const { discord, token } = fastify;
 
@@ -19,7 +20,8 @@ export default async function routes(fastify: FastifyInstance) {
   fastify.put(
     "/commands/update",
     {
-      preHandler: async (request, reply) => token.verifyToken(request, reply),
+      // eslint-disable-next-line
+      preHandler: async (request, reply) => { token.verifyToken(request, reply); },
     },
     async (_, reply) => {
       return updateCommands(discord, reply);
