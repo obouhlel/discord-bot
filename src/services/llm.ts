@@ -22,7 +22,7 @@ export default class LLMService {
   ): Promise<string> {
     try {
       const chatCompletion = await this._client.chatCompletion({
-        provider: "auto",
+        provider: "novita",
         model: "Qwen/Qwen2.5-Coder-32B-Instruct",
         messages: [
           {
