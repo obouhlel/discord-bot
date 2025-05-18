@@ -1,3 +1,5 @@
+# Discord Bot
+
 ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=flat&logo=typescript&logoColor=white)
 ![Discord.js](https://img.shields.io/badge/discord.js-5865F2?style=flat&logo=discord&logoColor=white)
@@ -7,8 +9,6 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
-
-# Discord Bot
 
 This project is a Discord bot built with [Bun](https://bun.sh/), [TypeScript](https://www.typescriptlang.org/), and [discord.js](https://discord.js.org/). It also uses [Fastify](https://www.fastify.io/) for the HTTP server and [Prisma](https://www.prisma.io/) as the ORM.
 
