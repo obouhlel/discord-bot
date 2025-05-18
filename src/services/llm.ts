@@ -22,8 +22,8 @@ export default class LLMService {
   ): Promise<string> {
     try {
       const chatCompletion = await this._client.chatCompletion({
-        provider: "novita",
-        model: "deepseek-ai/DeepSeek-V3-0324",
+        provider: "auto",
+        model: "Qwen/Qwen2.5-Coder-32B-Instruct",
         messages: [
           {
             role: "system",
