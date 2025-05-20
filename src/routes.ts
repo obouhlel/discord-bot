@@ -6,7 +6,7 @@ export default async function routes(fastify: FastifyInstance) {
   const { discord, token } = fastify;
 
   fastify.get("/", async (_, reply) => {
-    return status(discord, reply);
+    status(discord, reply);
   });
 
   fastify.post("/auth", async (request, reply) => {
