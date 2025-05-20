@@ -27,6 +27,7 @@ export const echo = {
       InteractionContextType.BotDM,
       InteractionContextType.PrivateChannel,
     ]),
+
   async execute(interaction: ChatInputCommandInteraction) {
     const message = interaction.options.getString("message", true);
     await interaction.reply(message);

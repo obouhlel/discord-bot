@@ -1,12 +1,19 @@
 import type CustomDiscordClient from "./custom-discord-client";
 import type { Message } from "discord.js";
 
-export interface CommandContext {
+export interface MessageCommandContext {
   client: CustomDiscordClient;
   message: Message;
 }
 
-export default abstract class MessageCommand {
-  abstract shouldExecute(ctx: CommandContext): boolean;
-  abstract execute(ctx: CommandContext): Promise<void>;
+export interface MessageCommandData {
+  name: string;
+  description: string;
+}
+
+export abstract class MessageCommand {
+  public abstract readonly data: MessageCommandData;
+
+  abstract shouldExecute(ctx: MessageCommandContext): boolean;
+  abstract execute(ctx: MessageCommandContext): Promise<void>;
 }

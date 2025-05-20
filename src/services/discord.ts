@@ -1,18 +1,23 @@
+import CustomDiscordClient from "types/custom-discord-client";
+// services
 import type LLMService from "./llm";
 import type { RedisClient } from "bun";
 import type { PrismaClient } from "generated/prisma/index-browser";
-import CustomDiscordClient from "types/custom-discord-client";
+// discord settings
 import { GatewayIntentBits, Partials } from "discord.js";
 import { REST, Routes } from "discord.js";
-import { commandsDatas } from "commands/slash";
-import type MessageCommand from "types/message-command";
+// commands
+import type { MessageCommand } from "types/message-command";
+import type { SlashCommand } from "types/slash-command";
 import { buildMessageCommands } from "factories/message-command";
+import { buildSlashCommand } from "factories/slash-command";
 
 export default class DiscordService {
   public client: CustomDiscordClient;
   public rest: REST;
   public readonly messageCommand: MessageCommand[];
-  // public readonly slashCommand: SlashCommand[];
+  public readonly slashCommand: SlashCommand[];
+  public readonly mapSlashCommand: Map<string, SlashCommand>;
 
   constructor(redis: RedisClient, llm: LLMService, prisma: PrismaClient) {
     this.client = new CustomDiscordClient({
@@ -28,7 +33,12 @@ export default class DiscordService {
 
     this.rest = new REST({ version: "10" }).setToken(Bun.env.DISCORD_TOKEN);
 
+    this.slashCommand = buildSlashCommand();
     this.messageCommand = buildMessageCommands();
+
+    this.mapSlashCommand = new Map(
+      this.slashCommand.map((cmd) => [cmd.data.name, cmd]),
+    );
 
     this.client.redis = redis;
     this.client.llm = llm;
@@ -39,11 +49,24 @@ export default class DiscordService {
     try {
       console.log("🔄 | Updating slash commands...");
       await this.rest.put(Routes.applicationCommands(Bun.env.CLIENT_ID), {
-        body: commandsDatas,
+        body: this.slashCommand.map((cmd) => cmd.data.toJSON()),
       });
       console.log("✅ | Slash commands updated successfully.");
     } catch (error) {
       console.error("❌ | Failed to update slash commands:", error);
     }
+  }
+
+  public getCommandData() {
+    const messageCommandDatas = this.messageCommand.map(
+      (command) => command.data,
+    );
+    const slashCommandDatas = this.slashCommand.map((command) =>
+      command.data.toJSON(),
+    );
+    return {
+      messageCommands: messageCommandDatas,
+      slashCommands: slashCommandDatas,
+    };
   }
 }

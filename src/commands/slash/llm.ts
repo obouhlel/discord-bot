@@ -27,6 +27,7 @@ export const llm = {
       InteractionContextType.Guild,
       InteractionContextType.PrivateChannel,
     ]),
+
   async execute(interaction: ChatInputCommandInteraction) {
     const { llm } = interaction.client as CustomDiscordClient;
     const prompt = interaction.options.getString("prompt", true);

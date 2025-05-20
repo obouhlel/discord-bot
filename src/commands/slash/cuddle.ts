@@ -18,6 +18,7 @@ export const cuddle = {
       InteractionContextType.PrivateChannel,
       InteractionContextType.Guild,
     ]),
+
   async execute(interaction: ChatInputCommandInteraction) {
     const { data } = await axios.get<{ url: string }>(
       "https://api.waifu.pics/sfw/cuddle",

@@ -1,4 +1,4 @@
-import type MessageCommand from "types/message-command";
+import type { MessageCommand } from "types/message-command";
 import PingCommand from "commands/message/ping";
 import QuoiCommand from "commands/message/quoi";
 import LLMGuild from "commands/message/llm-guild";

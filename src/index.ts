@@ -16,7 +16,7 @@ import { interactionCreate } from "events/interaction-create";
 import { guildMemberAdd } from "events/guild-member-add";
 
 // type
-import type { Message } from "discord.js";
+import type { Interaction, Message } from "discord.js";
 
 const fastify = Fastify({
   logger: true,
@@ -45,8 +45,13 @@ fastify.addHook("onReady", async function () {
   });
 
   // Slash commands
-  // eslint-disable-next-line
-  fastify.discord.client.on(Events.InteractionCreate, interactionCreate);
+  fastify.discord.client.on(
+    Events.InteractionCreate,
+    // eslint-disable-next-line
+    async (interaction: Interaction) => {
+      await interactionCreate(interaction, fastify.discord.mapSlashCommand);
+    },
+  );
 
   // New member in server/guild
   // eslint-disable-next-line

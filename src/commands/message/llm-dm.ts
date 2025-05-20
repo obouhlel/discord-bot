@@ -1,12 +1,17 @@
-import type { CommandContext } from "types/message-command";
-import MessageCommand from "types/message-command";
+import type { MessageCommandContext } from "types/message-command";
+import { MessageCommand } from "types/message-command";
 
 export default class LLMDirectMessage extends MessageCommand {
-  shouldExecute({ message }: CommandContext): boolean {
+  public readonly data = {
+    name: "LLM Direct Message",
+    description: "Send a message to LLM agent and reply in direct message",
+  };
+
+  shouldExecute({ message }: MessageCommandContext): boolean {
     return !message.inGuild() && !message.author.bot;
   }
 
-  async execute({ client, message }: CommandContext): Promise<void> {
+  async execute({ client, message }: MessageCommandContext): Promise<void> {
     const channel = message.author.dmChannel;
 
     if (!channel) return;

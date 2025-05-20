@@ -12,6 +12,7 @@ export const welcome = {
     .setDescription("Set welcome message on server in current channel")
     .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
     .setContexts([InteractionContextType.Guild]),
+
   async execute(interaction: ChatInputCommandInteraction) {
     if (!interaction.guildId || !interaction.channel) return;
     const client = interaction.client as CustomDiscordClient;
@@ -20,23 +21,18 @@ export const welcome = {
     const channelId = interaction.channelId;
     const key = `welcome:${interaction.guildId}`;
 
-    try {
-      const value = await redis.get(key);
-      if (value && value === channelId) {
-        await interaction.reply(`Welcome message is already set in ${channel}`);
-        return;
-      }
-      await redis.set(key, channelId);
-      if (value) {
-        await interaction.reply(
-          `Welcome message is update to ${channel} (old: <#${value}>)`,
-        );
-      } else {
-        await interaction.reply(`Welcome message is set to ${channel}`);
-      }
-    } catch (error) {
-      console.error("Error interacting with Redis:", error);
-      await interaction.reply("Error setting the welcome message channel.");
+    const value = await redis.get(key);
+    if (value && value === channelId) {
+      await interaction.reply(`Welcome message is already set in ${channel}`);
+      return;
+    }
+    await redis.set(key, channelId);
+    if (value) {
+      await interaction.reply(
+        `Welcome message is update to ${channel} (old: <#${value}>)`,
+      );
+    } else {
+      await interaction.reply(`Welcome message is set to ${channel}`);
     }
   },
 };

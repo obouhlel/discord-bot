@@ -12,6 +12,7 @@ export const score = {
     .setDescription("Get the number of 'feur' triggered")
     .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
     .setContexts([InteractionContextType.Guild]),
+
   async execute(interaction: ChatInputCommandInteraction) {
     const client = interaction.client as CustomDiscordClient;
     const redis = client.redis;
