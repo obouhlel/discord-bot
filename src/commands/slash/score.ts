@@ -15,12 +15,8 @@ export const score = {
   async execute(interaction: ChatInputCommandInteraction) {
     const client = interaction.client as CustomDiscordClient;
     const redis = client.redis;
-    try {
-      const score = Number(await redis.get(`feur:${interaction.user.id}`));
-      await interaction.reply(`You score of 'feur' is **${score.toString()}**`);
-    } catch (error) {
-      console.error(error);
-      await interaction.reply("Error server");
-    }
+
+    const score = Number(await redis.get(`feur:${interaction.user.id}`));
+    await interaction.reply(`You score of 'feur' is **${score.toString()}**`);
   },
 };

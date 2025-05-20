@@ -19,13 +19,9 @@ export const cuddle = {
       InteractionContextType.Guild,
     ]),
   async execute(interaction: ChatInputCommandInteraction) {
-    try {
-      const { data } = await axios.get<{ url: string }>(
-        "https://api.waifu.pics/sfw/cuddle",
-      );
-      await interaction.reply(data.url);
-    } catch {
-      await interaction.reply("Error in server");
-    }
+    const { data } = await axios.get<{ url: string }>(
+      "https://api.waifu.pics/sfw/cuddle",
+    );
+    await interaction.reply(data.url);
   },
 };

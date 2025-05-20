@@ -15,6 +15,9 @@ import { messageCreate } from "events/message-create";
 import { interactionCreate } from "events/interaction-create";
 import { guildMemberAdd } from "events/guild-member-add";
 
+// type
+import type { Message } from "discord.js";
+
 const fastify = Fastify({
   logger: true,
 });
@@ -37,7 +40,9 @@ fastify.addHook("onReady", async function () {
 
   // New message
   // eslint-disable-next-line
-  fastify.discord.client.on(Events.MessageCreate, messageCreate);
+  fastify.discord.client.on(Events.MessageCreate, async (message: Message) => {
+    await messageCreate(message, fastify.discord.messageCommand);
+  });
 
   // Slash commands
   // eslint-disable-next-line

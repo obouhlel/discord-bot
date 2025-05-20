@@ -4,12 +4,15 @@ import type { PrismaClient } from "generated/prisma/index-browser";
 import CustomDiscordClient from "types/custom-discord-client";
 import { GatewayIntentBits, Partials } from "discord.js";
 import { REST, Routes } from "discord.js";
-import { commandsDatas } from "commands";
-import Random from "utils/random";
+import { commandsDatas } from "commands/slash";
+import type MessageCommand from "types/message-command";
+import { buildMessageCommands } from "factories/message-command";
 
 export default class DiscordService {
   public client: CustomDiscordClient;
   public rest: REST;
+  public readonly messageCommand: MessageCommand[];
+  // public readonly slashCommand: SlashCommand[];
 
   constructor(redis: RedisClient, llm: LLMService, prisma: PrismaClient) {
     this.client = new CustomDiscordClient({
@@ -25,12 +28,11 @@ export default class DiscordService {
 
     this.rest = new REST({ version: "10" }).setToken(Bun.env.DISCORD_TOKEN);
 
-    const random = new Random();
+    this.messageCommand = buildMessageCommands();
 
     this.client.redis = redis;
     this.client.llm = llm;
     this.client.prisma = prisma;
-    this.client.random = random;
   }
 
   public async updateCommands() {
