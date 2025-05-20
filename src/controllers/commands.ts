@@ -8,7 +8,7 @@ export async function getCommands(
   try {
     const commands = discord.getCommandData();
     await reply.status(200).send({
-      commands: commands,
+      commands,
     });
   } catch (error) {
     console.error(error);
