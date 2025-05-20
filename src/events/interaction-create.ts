@@ -1,8 +1,9 @@
 import type { Interaction } from "discord.js";
-import { commands } from "commands";
+import type { SlashCommand } from "types/slash-command";
 
 export async function interactionCreate(
   interaction: Interaction,
+  commands: Map<string, SlashCommand>,
 ): Promise<void> {
   if (!interaction.isChatInputCommand()) return;
   const command = commands.get(interaction.commandName);
@@ -13,6 +14,6 @@ export async function interactionCreate(
   try {
     await command.execute(interaction);
   } catch {
-    await interaction.reply("Error server");
+    await interaction.reply(`${command.data.name} an error occured`);
   }
 }

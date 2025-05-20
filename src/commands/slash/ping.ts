@@ -14,6 +14,7 @@ export const ping = {
       ApplicationIntegrationType.UserInstall,
     ])
     .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild]),
+
   async execute(interaction: ChatInputCommandInteraction) {
     await interaction.reply("Pong!");
   },

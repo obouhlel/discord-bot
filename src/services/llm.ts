@@ -23,7 +23,7 @@ export default class LLMService {
     try {
       const chatCompletion = await this._client.chatCompletion({
         provider: "novita",
-        model: "Qwen/Qwen2.5-Coder-32B-Instruct",
+        model: "deepseek-ai/DeepSeek-V3-0324",
         messages: [
           {
             role: "system",
@@ -47,8 +47,7 @@ export default class LLMService {
       }
 
       return response;
-    } catch (error) {
-      console.error("Error :", error);
+    } catch {
       return "I can't send message";
     }
   }

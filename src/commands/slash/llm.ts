@@ -27,16 +27,12 @@ export const llm = {
       InteractionContextType.Guild,
       InteractionContextType.PrivateChannel,
     ]),
+
   async execute(interaction: ChatInputCommandInteraction) {
-    try {
-      const { llm } = interaction.client as CustomDiscordClient;
-      const prompt = interaction.options.getString("prompt", true);
-      await interaction.deferReply();
-      const message = await llm.generateMessageSlash(prompt);
-      await interaction.editReply(message);
-    } catch {
-      console.error("Error with the command /llm");
-      await interaction.reply("Error with the command /llm");
-    }
+    const { llm } = interaction.client as CustomDiscordClient;
+    const prompt = interaction.options.getString("prompt", true);
+    await interaction.deferReply();
+    const message = await llm.generateMessageSlash(prompt);
+    await interaction.editReply(message);
   },
 };

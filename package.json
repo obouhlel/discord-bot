@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "docker compose -f docker-compose.dev.yml up -d && sleep 3 && bun --hot src/index.ts",
+    "dev": "docker compose -f docker-compose.dev.yml up -d && sleep 3 && bun --watch src/index.ts",
     "lint": "eslint src --ignore-pattern 'src/generated'",
     "format": "prettier . --write",
     "format:check": "prettier --check .",
