@@ -1,11 +1,7 @@
-import { Routes } from "discord.js";
 import type { FastifyReply } from "fastify";
 import type DiscordService from "services/discord";
 
-export async function status(
-  discord: DiscordService,
-  reply: FastifyReply,
-): Promise<void> {
+export function status(discord: DiscordService, reply: FastifyReply) {
   try {
     if (!discord.client.isReady()) {
       reply.status(503).send({
@@ -15,16 +11,10 @@ export async function status(
       return;
     }
 
-    const commands = await discord.rest.get(
-      Routes.applicationCommands(Bun.env.CLIENT_ID),
-    );
-
     reply.status(200).send({
       status: "ok",
       message: "Bot is operational",
-      commands: commands,
     });
-    return;
   } catch (error) {
     console.error("Error checking bot status:", error);
 
@@ -32,6 +22,5 @@ export async function status(
       status: "error",
       message: "Internal server error",
     });
-    return;
   }
 }

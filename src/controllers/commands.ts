@@ -1,4 +1,3 @@
-import { Routes } from "discord.js";
 import type { FastifyReply } from "fastify";
 import type DiscordService from "services/discord";
 
@@ -7,9 +6,7 @@ export async function getCommands(
   reply: FastifyReply,
 ) {
   try {
-    const commands = await discord.rest.get(
-      Routes.applicationCommands(Bun.env.CLIENT_ID),
-    );
+    const commands = discord.getCommandData();
     await reply.status(200).send({
       commands: commands,
     });
