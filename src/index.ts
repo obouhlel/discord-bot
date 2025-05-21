@@ -3,6 +3,7 @@ import routes from "routes";
 
 // plugins
 import helmet from "@fastify/helmet";
+import cookie from "@fastify/cookie";
 import prismaPlugin from "plugins/prisma";
 import redisPlugin from "plugins/redis";
 import llmPlugin from "plugins/llm";
@@ -23,6 +24,7 @@ const fastify = Fastify({
 });
 
 fastify.register(helmet);
+fastify.register(cookie, { secret: Bun.env.COOKIE_SECRET });
 fastify.register(prismaPlugin);
 fastify.register(redisPlugin);
 fastify.register(llmPlugin);
