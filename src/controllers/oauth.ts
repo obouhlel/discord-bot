@@ -82,6 +82,7 @@ export async function oauthDiscord(
       secure: Bun.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24,
+      domain: Bun.env.NODE_ENV === "production" ? ".neko.oustopie.xyz" : "",
     });
 
     await reply.redirect(Bun.env.FRONT_URL);
