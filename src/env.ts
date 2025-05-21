@@ -7,8 +7,10 @@ declare module "bun" {
     CLIENT_SECRET: string;
     DISCORD_TOKEN: string;
     REDIRECT_URI: string;
+    COOKIE_SECRET: string;
     REDIS_URL: string;
     LLM_TOKEN: string;
     DATABASE_URL: string;
+    FRONT_URL: string;
   }
 }

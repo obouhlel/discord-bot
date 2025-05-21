@@ -7,10 +7,14 @@ services:
       - USERNAME=${USERNAME}
       - PASSWORD=${PASSWORD}
       - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
       - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - REDIRECT_URI=${REDIRECT_URI}
+      - COOKIE_SECRET=${COOKIE_SECRET}
       - REDIS_URL=${REDIS_URL}
       - LLM_TOKEN=${LLM_TOKEN}
       - DATABASE_URL=${DATABASE_URL}
+      - FRONT_URL=${FRONT_URL}
     labels:
       - "coolify.managed=true"
       - "traefik.enable=true"
