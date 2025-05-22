@@ -7,8 +7,8 @@ import {
   InteractionContextType,
   SlashCommandBuilder,
 } from "discord.js";
-import AnilistService from "services/anilist";
 import type CustomDiscordClient from "types/custom-discord-client";
+import AnilistService from "services/anilist";
 
 export const anilist = {
   data: new SlashCommandBuilder()
@@ -34,52 +34,68 @@ export const anilist = {
     const { prisma } = client;
     const anilistUsername = interaction.options.getString("username", true);
     const anilistService = new AnilistService();
+    const user = interaction.user;
+
+    if (!user.avatar || !user.globalName) {
+      return await interaction.reply("Please set an avatar or an globale name");
+    }
 
     await interaction.deferReply();
 
     const data = await anilistService.getUser(anilistUsername);
-
     if (!data) return await interaction.editReply("Username not found");
 
     const anilistData = data.data.User;
-    const discordUser = interaction.user;
-
-    if (!discordUser.avatar || !discordUser.globalName) {
-      return await interaction.editReply(
-        "Please set an avatar or an globale name",
-      );
+    const animeId = await anilistService.getAnimesId(
+      anilistData.id,
+      anilistData.name,
+    );
+    const mangaId = await anilistService.getMangasId(
+      anilistData.id,
+      anilistData.name,
+    );
+    if (!animeId || !mangaId) {
+      return await interaction.editReply("Please try again in 1 minute");
     }
 
-    const dbUser = await prisma.user.findUnique({
-      where: { discordId: discordUser.id },
+    const existingUser = await prisma.user.findUnique({
+      where: { discordId: user.id },
     });
 
-    if (!dbUser) {
-      await prisma.user.create({
-        data: {
-          name: discordUser.globalName,
-          username: discordUser.username,
-          email: null,
-          discordId: discordUser.id,
-          anilistUser: anilistData.name,
-          anilistId: anilistData.id.toString(),
-          avatarId: discordUser.avatar,
-        },
-      });
-    } else {
-      await prisma.user.update({
-        where: {
-          id: dbUser.id,
-        },
-        data: {
-          anilistId: anilistData.id.toString(),
-          anilistUser: anilistData.name,
-        },
+    if (existingUser?.anilistUserId) {
+      await prisma.anilistUser.delete({
+        where: { id: existingUser.anilistUserId },
       });
     }
 
+    const anilistRecord = await prisma.anilistUser.create({
+      data: {
+        anilistId: anilistData.id,
+        anilistName: anilistData.name,
+        animeId: animeId,
+        mangaId: mangaId,
+      },
+    });
+
+    await prisma.user.upsert({
+      where: { discordId: user.id },
+      update: {
+        name: user.globalName,
+        username: user.username,
+        avatarId: user.avatar,
+        anilistUserId: anilistRecord.id,
+      },
+      create: {
+        name: user.globalName,
+        username: user.username,
+        discordId: user.id,
+        anilistUserId: anilistRecord.id,
+        avatarId: user.avatar,
+      },
+    });
+
     await interaction.editReply(
-      `Your discord linked with this [anlist account](${anilistData.siteUrl})`,
+      `Your discord linked with this [anlist account](${anilistData.siteUrl}), ${animeId.length.toString()} animes, and ${mangaId.length.toString()} mangas.`,
     );
   },
 };

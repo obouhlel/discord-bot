@@ -16,15 +16,24 @@ datasource db {
 }
 
 model User {
-  id          Int     @id @default(autoincrement())
-  name        String
-  username    String  @unique
-  email       String? @unique
-  discordId   String  @unique
-  anilistUser String?
-  anilistId   String?
-  avatarId    String
-  tokens      Token[]
+  id            Int          @id @default(autoincrement())
+  name          String
+  username      String       @unique
+  email         String?      @unique
+  discordId     String       @unique
+  anilistUserId Int?         @unique
+  anilist       AnilistUser? @relation(fields: [anilistUserId], references: [id])
+  avatarId      String
+  tokens        Token[]
+}
+
+model AnilistUser {
+  id          Int    @id @default(autoincrement())
+  anilistId   Int
+  anilistName String
+  animeId     Int[]
+  mangaId     Int[]
+  user        User?  @relation
 }
 
 enum Provider {
