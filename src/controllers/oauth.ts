@@ -68,6 +68,23 @@ export async function oauthDiscord(
         },
       }));
 
+    if (
+      dbUser.avatarId !== discordUser.avatar ||
+      dbUser.name !== discordUser.global_name ||
+      dbUser.username !== discordUser.username ||
+      dbUser.email !== dbUser.email
+    ) {
+      await prisma.user.update({
+        where: { id: dbUser.id },
+        data: {
+          name: discordUser.global_name,
+          username: discordUser.username,
+          email: discordUser.email,
+          avatarId: discordUser.avatar,
+        },
+      });
+    }
+
     const sessionId = crypto.randomUUID();
     await redis.set(
       `session:${sessionId}`,
