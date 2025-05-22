@@ -38,7 +38,7 @@ export default async function routes(fastify: FastifyInstance) {
       await fastify.redis.del(`session:${sessionId}`);
       reply.clearCookie("session_id", { path: "/" });
     }
-    reply.send({ success: true });
+    await reply.send({ success: true });
   });
 
   // Get Commands for the front
