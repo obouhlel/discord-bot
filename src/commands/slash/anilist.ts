@@ -24,10 +24,7 @@ export const anilist = {
       ApplicationIntegrationType.GuildInstall,
       ApplicationIntegrationType.UserInstall,
     ])
-    .setContexts([
-      InteractionContextType.PrivateChannel,
-      InteractionContextType.Guild,
-    ]),
+    .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild]),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const client = interaction.client as CustomDiscordClient;
