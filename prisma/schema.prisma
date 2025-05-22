@@ -16,19 +16,19 @@ datasource db {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  name      String
-  username  String  @unique
-  email     String  @unique
-  discordId String  @unique
-  anilistId String? @unique
-  avatarId  String
-  tokens    Token[]
+  id          Int     @id @default(autoincrement())
+  name        String
+  username    String  @unique
+  email       String? @unique
+  discordId   String  @unique
+  anilistUser String?
+  anilistId   String?
+  avatarId    String
+  tokens      Token[]
 }
 
 enum Provider {
   DISCORD
-  ANILIST
 }
 
 model Token {

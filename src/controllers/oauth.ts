@@ -53,6 +53,7 @@ export async function oauthDiscord(
           username: discordUser.username,
           email: discordUser.email,
           discordId: discordUser.id,
+          anilistUser: null,
           anilistId: null,
           avatarId: discordUser.avatar,
           tokens: {

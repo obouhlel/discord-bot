@@ -1,6 +1,6 @@
 import { Client } from "discord.js";
 import type { RedisClient } from "bun";
-import type { PrismaClient } from "generated/prisma/index-browser";
+import type { PrismaClient } from "generated/prisma";
 import type LLMService from "services/llm";
 
 export default class CustomDiscordClient extends Client {
