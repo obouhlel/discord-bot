@@ -36,9 +36,15 @@ export default async function routes(fastify: FastifyInstance) {
     const sessionId = request.cookies.session_id;
     if (sessionId) {
       await fastify.redis.del(`session:${sessionId}`);
-      reply.clearCookie("session_id", { path: "/" });
+      reply.clearCookie("session_id", {
+        path: "/",
+        httpOnly: true,
+        domain: Bun.env.NODE_ENV === "production" ? ".neko.oustopie.xyz" : "",
+        sameSite: "lax",
+      });
+      return reply.send({ success: true });
     }
-    await reply.send({ success: true });
+    return reply.send({ success: false });
   });
 
   // Get Commands for the front
