@@ -59,8 +59,8 @@ export default class Quiz extends MessageCommand {
       return;
     }
 
-    const res = data.media.titles.some((title) =>
-      title.title.toLowerCase().includes(answer),
+    const res = data.media.titles.some(
+      (title) => title.title.toLowerCase() === answer,
     );
 
     console.log(JSON.stringify(data, null, 2));
