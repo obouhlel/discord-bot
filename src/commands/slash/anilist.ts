@@ -34,13 +34,17 @@ export const anilist = {
     const user = interaction.user;
 
     if (!user.avatar || !user.globalName) {
-      return await interaction.reply("Please set an avatar or an globale name");
+      await interaction.reply("Please set an avatar or an globale name");
+      return;
     }
 
     await interaction.deferReply();
 
     const data = await anilistService.getUser(anilistUsername);
-    if (!data) return await interaction.editReply("Username not found");
+    if (!data) {
+      await interaction.editReply("Username not found");
+      return;
+    }
 
     const anilistData = data.data.User;
     const animeId = await anilistService.getAnimesId(
@@ -52,7 +56,8 @@ export const anilist = {
       anilistData.name,
     );
     if (!animeId || !mangaId) {
-      return await interaction.editReply("Please try again in 1 minute");
+      await interaction.editReply("Please try again in 1 minute");
+      return;
     }
 
     const existingUser = await prisma.user.findUnique({
