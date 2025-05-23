@@ -15,7 +15,10 @@ export async function interactionCreate(
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
-    await interaction.reply(`${command.data.name} an error occured`);
-    await interaction.editReply(`${command.data.name} an error occured`);
+    if (interaction.replied || interaction.deferred) {
+      await interaction.editReply(`${command.data.name} an error occured`);
+    } else {
+      await interaction.reply(`${command.data.name} an error occured`);
+    }
   }
 }
