@@ -1,3 +1,5 @@
+import type { MediaTitle } from "./media-title";
+
 interface AnimeImages {
   jpg: {
     image_url: string;
@@ -15,11 +17,6 @@ interface AnimeTrailer {
   youtube_id: string;
   url: string;
   embed_url: string;
-}
-
-interface AnimeTitle {
-  type: string;
-  title: string;
 }
 
 interface AnimeProp {
@@ -77,11 +74,7 @@ export interface Anime {
   images: AnimeImages;
   trailer: AnimeTrailer;
   approved: boolean;
-  titles: AnimeTitle[];
-  title: string;
-  title_english: string;
-  title_japanese: string;
-  title_synonyms: string[];
+  titles: MediaTitle[];
   type: string;
   source: string;
   episodes: number;

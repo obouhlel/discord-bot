@@ -11,9 +11,8 @@ import {
 } from "discord.js";
 import JikanService from "services/jikan";
 import type CustomDiscordClient from "types/custom-discord-client";
+import type { QuizType } from "types/quiz";
 import { capitalize } from "utils/capitalize";
-
-type Type = "anime" | "manga";
 
 export const quiz = {
   data: new SlashCommandBuilder()
@@ -40,7 +39,7 @@ export const quiz = {
     const { prisma, redis } = client;
     const user: User = interaction.user;
     const channel: TextBasedChannel | null = interaction.channel;
-    const type = interaction.options.getString("type", true) as Type;
+    const type = interaction.options.getString("type", true) as QuizType;
 
     if (!channel) {
       await interaction.reply("Please use the quiz command in a valid channel");
@@ -49,59 +48,71 @@ export const quiz = {
 
     await interaction.deferReply();
 
-    try {
-      const dbUser = await prisma.user.findUnique({
-        where: {
-          discordId: user.id,
-        },
-      });
+    const pattern = `quiz:*:${user.id}:*`;
+    const keys = await redis.keys(pattern);
 
-      if (!dbUser?.anilistUserId) {
-        await interaction.reply("Please run the /anilist to register");
-        return;
+    if (keys.length > 1) {
+      for (const key of keys) {
+        await redis.del(key);
       }
-
-      const anilistUser = await prisma.anilistUser.findUnique({
-        where: {
-          id: dbUser.anilistUserId,
-        },
-      });
-
-      if (!anilistUser) {
-        await interaction.reply("Please run the /anilist to register");
-        return;
-      }
-
-      const malIds =
-        type === "anime" ? anilistUser.animeId : anilistUser.mangaId;
-
-      if (malIds.length === 0) {
-        await interaction.reply(`Your ${type} list is empty`);
-        return;
-      }
-
-      const index = Math.floor(Math.random() * malIds.length);
-      // eslint-disable-next-line
-      const malId = malIds[index]!;
-      const jikanService = new JikanService();
-
-      const random =
-        type === "anime"
-          ? await jikanService.getAnimeInfo(malId)
-          : await jikanService.getMangaInfo(malId);
-
-      if (!random) {
-        await interaction.editReply(`${capitalize(type)} not found`);
-        return;
-      }
-
-      const key = `quiz:${type}:${user.id}:${channel.id}`;
-      await redis.set(key, JSON.stringify(random));
-
-      await interaction.editReply(`The quiz start in <#${channel.id}>`);
-    } catch (error) {
-      console.error(error);
-      await interaction.editReply(`Error`);
     }
+
+    if (keys.length === 1) {
+      // eslint-disable-next-line
+      const channelId = keys[0]!.split(":", 4)[3]!;
+      await interaction.editReply(
+        `A quiz is already running in <#${channelId}>`,
+      );
+      return;
+    }
+
+    const dbUser = await prisma.user.findUnique({
+      where: {
+        discordId: user.id,
+      },
+    });
+
+    if (!dbUser?.anilistUserId) {
+      await interaction.reply("Please run the /anilist to register");
+      return;
+    }
+
+    const anilistUser = await prisma.anilistUser.findUnique({
+      where: {
+        id: dbUser.anilistUserId,
+      },
+    });
+
+    if (!anilistUser) {
+      await interaction.reply("Please run the /anilist to register");
+      return;
+    }
+
+    const malIds = type === "anime" ? anilistUser.animeId : anilistUser.mangaId;
+
+    if (malIds.length === 0) {
+      await interaction.reply(`Your ${type} list is empty`);
+      return;
+    }
+
+    const index = Math.floor(Math.random() * (malIds.length - 1));
+    // eslint-disable-next-line
+    const malId = malIds[index]!;
+    const jikanService = new JikanService();
+
+    const random =
+      type === "anime"
+        ? await jikanService.getAnimeInfo(malId)
+        : await jikanService.getMangaInfo(malId);
+
+    if (!random) {
+      await interaction.editReply(`${capitalize(type)} not found`);
+      return;
+    }
+
+    const key = `quiz:${type}:${user.id}:${channel.id}`;
+    await redis.set(key, JSON.stringify(random));
+
+    await interaction.editReply(`The quiz start in <#${channel.id}>`);
   },
 };

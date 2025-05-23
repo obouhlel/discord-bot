@@ -1,3 +1,5 @@
+import type { MediaTitle } from "./media-title";
+
 interface MangaImages {
   jpg: {
     image_url: string;
@@ -9,11 +11,6 @@ interface MangaImages {
     small_image_url: string;
     large_image_url: string;
   };
-}
-
-interface MangaTitle {
-  type: string;
-  title: string;
 }
 
 interface MangaDate {
@@ -54,11 +51,7 @@ export interface Manga {
   url: string;
   images: MangaImages;
   approved: boolean;
-  titles: MangaTitle[];
-  title: string;
-  title_english: string;
-  title_japanese: string;
-  title_synonyms: string[];
+  titles: MediaTitle[];
   type: "Manga";
   chapters: number;
   volumes: number;

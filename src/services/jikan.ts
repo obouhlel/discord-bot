@@ -14,24 +14,18 @@ export default class JikanService {
   public async getAnimeInfo(id: number): Promise<Anime | null> {
     const url = this._url + `/anime/${id.toString()}/full`;
 
-    const anime = (await this._requestGet(url)) as Anime | null;
-
+    const anime = (await this._requestGet(url)) as { data: Anime } | null;
     if (!anime) return null;
 
-    console.log(anime);
-
-    return anime;
+    return anime.data;
   }
 
   public async getMangaInfo(id: number): Promise<Manga | null> {
     const url = this._url + `/manga/${id.toString()}/full`;
 
-    const manga = (await this._requestGet(url)) as Manga | null;
-
+    const manga = (await this._requestGet(url)) as { data: Manga } | null;
     if (!manga) return null;
 
-    console.log(manga);
-
-    return manga;
+    return manga.data;
   }
 }

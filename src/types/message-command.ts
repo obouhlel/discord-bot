@@ -14,6 +14,8 @@ export interface MessageCommandData {
 export abstract class MessageCommand {
   public abstract readonly data: MessageCommandData;
 
-  abstract shouldExecute(ctx: MessageCommandContext): boolean;
+  abstract shouldExecute(
+    ctx: MessageCommandContext,
+  ): boolean | Promise<boolean>;
   abstract execute(ctx: MessageCommandContext): Promise<void>;
 }
