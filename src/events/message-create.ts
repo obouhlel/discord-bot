@@ -11,7 +11,7 @@ export async function messageCreate(
 
   try {
     for (const command of commands) {
-      if (command.shouldExecute(context)) {
+      if (await command.shouldExecute(context)) {
         await command.execute(context);
       }
     }

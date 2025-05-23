@@ -2,14 +2,14 @@ import CustomDiscordClient from "types/custom-discord-client";
 // services
 import type LLMService from "./llm";
 import type { RedisClient } from "bun";
-import type { PrismaClient } from "generated/prisma/index-browser";
+import type { PrismaClient } from "generated/prisma";
 // discord settings
 import { GatewayIntentBits, Partials } from "discord.js";
 import { REST, Routes } from "discord.js";
 // commands
 import type { MessageCommand } from "types/message-command";
 import type { SlashCommand } from "types/slash-command";
-import { buildMessageCommands } from "factories/message-command";
+import { buildMessageCommands } from "../factories/message-command";
 import { buildSlashCommand } from "factories/slash-command";
 
 export default class DiscordService {

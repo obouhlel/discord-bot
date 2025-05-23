@@ -43,47 +43,34 @@ export async function oauthDiscord(
       },
     );
 
-    const dbUser =
-      (await prisma.user.findUnique({
-        where: { discordId: discordUser.id },
-      })) ??
-      (await prisma.user.create({
-        data: {
-          name: discordUser.global_name,
-          username: discordUser.username,
-          email: discordUser.email,
-          discordId: discordUser.id,
-          anilistId: null,
-          avatarId: discordUser.avatar,
-          tokens: {
-            create: {
-              provider: "DISCORD",
-              accessToken: token.access_token,
-              type: token.token_type,
-              expiresIn: token.expires_in,
-              refreshToken: token.refresh_token,
-              scope: token.scope,
-            },
+    const dbUser = await prisma.user.upsert({
+      where: {
+        discordId: discordUser.id,
+      },
+      update: {
+        name: discordUser.global_name,
+        username: discordUser.username,
+        email: discordUser.email,
+        avatarId: discordUser.avatar,
+      },
+      create: {
+        name: discordUser.global_name,
+        username: discordUser.username,
+        email: discordUser.email,
+        discordId: discordUser.id,
+        avatarId: discordUser.avatar,
+        tokens: {
+          create: {
+            provider: "DISCORD",
+            accessToken: token.access_token,
+            type: token.token_type,
+            expiresIn: token.expires_in,
+            refreshToken: token.refresh_token,
+            scope: token.scope,
           },
         },
-      }));
-
-    if (
-      dbUser.avatarId !== discordUser.avatar ||
-      dbUser.name !== discordUser.global_name ||
-      dbUser.username !== discordUser.username ||
-      dbUser.email !== dbUser.email
-    ) {
-      await prisma.user.update({
-        where: { id: dbUser.id },
-        data: {
-          name: discordUser.global_name,
-          username: discordUser.username,
-          email: discordUser.email,
-          avatarId: discordUser.avatar,
-        },
-      });
-    }
+      },
+    });
 
     const sessionId = crypto.randomUUID();
     await redis.set(

@@ -1,0 +1,77 @@
+import type { MessageCommandContext } from "types/message-command";
+import { EmbedBuilder, type TextChannel } from "discord.js";
+import type { QuizData } from "types/quiz";
+import { MessageCommand } from "types/message-command";
+
+export default class Quiz extends MessageCommand {
+  public readonly data = {
+    name: "Quiz Anime/Manga",
+    description:
+      "You need to register with /anilist first. After that, use /quiz to start playing.",
+  };
+
+  async shouldExecute({
+    client,
+    message,
+  }: MessageCommandContext): Promise<boolean> {
+    if (message.author.bot) return false;
+
+    const { redis } = client;
+    const user = message.author;
+    const channelId = message.channelId;
+
+    const keys = await redis.keys(`quiz:*:${user.id}:${channelId}`);
+    if (!keys[0]) return false;
+    return true;
+  }
+
+  async execute({ client, message }: MessageCommandContext): Promise<void> {
+    const { redis } = client;
+    const user = message.author;
+    const channel = message.channel as TextChannel;
+    const keys = await redis.keys(`quiz:*:${user.id}:${channel.id}`);
+    const key = keys[0]!;
+    const value = await redis.get(key);
+    if (!value) return;
+
+    const data = JSON.parse(value) as QuizData;
+    const answer = message.content.toLowerCase();
+
+    if (answer === "!hint") {
+      const embed = new EmbedBuilder()
+        .setColor("Gold")
+        .setTitle("Hint")
+        .setDescription(
+          `📖 **Synopsis:** ${data.media.synopsis}\n🗓️ **Year:** ${data.media.year.toString()}\n🏷️ **Genres:** ${data.media.genres.join(", ")}`,
+        );
+      await channel.send({ embeds: [embed] });
+      return;
+    }
+
+    if (answer === "!skip") {
+      const res = data.media.titles.find(
+        (title) => title.type === "Default",
+      )!.title;
+      await channel.send(
+        `You gave up on this character. The response is : **${res}**`,
+      );
+      await redis.del(key);
+      return;
+    }
+
+    const res = data.media.titles.some(
+      (title) => title.title.toLowerCase() === answer,
+    );
+
+    console.log(JSON.stringify(data, null, 2));
+
+    if (!res) {
+      await channel.send(
+        "Wrong answer, type !hint for a clue, or !skip to give up.",
+      );
+    } else {
+      await channel.send("Success! You found the good title.");
+      await redis.del(key);
+    }
+  }
+}
