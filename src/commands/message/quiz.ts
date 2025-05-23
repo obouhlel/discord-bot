@@ -27,27 +27,28 @@ export default class Quiz extends MessageCommand {
     return true;
   }
 
-  // private _matchPercentage(
-  //   answer: string,
-  //   title: string,
-  //   threshold = 0.8
-  // ): boolean {
-  //   const answerWords = answer
-  //     .toLowerCase()
-  //     .split(/[ !~?.,"'’\-_:;()\[\]{}<>/\\|@#$%^&*+=`]+/)
-  //     .filter(Boolean);
-  //   const titleWords = title
-  //     .toLowerCase()
-  //     .split(/[ !~?.,"'’\-_:;()\[\]{}<>/\\|@#$%^&*+=`]+/)
-  //     .filter(Boolean);
-  //   console.log(answerWords);
-  //   console.log(titleWords);
-  //   const matchCount = titleWords.filter((word) =>
-  //     answerWords.includes(word)
-  //   ).length;
-  //   const percentage = matchCount / titleWords.length;
-  //   return percentage >= threshold;
-  // }
+  private _matchPercentage(
+    answer: string,
+    title: string,
+    threshold = 0.8,
+  ): boolean {
+    const answerWords = answer
+      .toLowerCase()
+      .split(/[ !~?.,"'’\-_:;()\[\]{}<>/\\|@#$%^&*+=`]+/)
+      .filter(Boolean);
+    const titleWords = title
+      .toLowerCase()
+      .split(/[ !~?.,"'’\-_:;()\[\]{}<>/\\|@#$%^&*+=`]+/)
+      .filter(Boolean);
+    console.log("answer = ", answerWords);
+    console.log("title =", titleWords);
+    const matchCount = titleWords.filter((word) =>
+      answerWords.includes(word),
+    ).length;
+    const percentage = (matchCount / titleWords.length) * 100;
+    console.log("% = ", percentage);
+    return percentage >= threshold;
+  }
 
   async execute({ client, message }: MessageCommandContext): Promise<void> {
     const { redis } = client;
@@ -88,7 +89,7 @@ export default class Quiz extends MessageCommand {
       (title) => answer === title.title.toLowerCase(),
     );
 
-    if (!res) {
+    if (res) {
       await channel.send(
         `Success! You found the good title. <@!${user.id}> +1 point!`,
       );
