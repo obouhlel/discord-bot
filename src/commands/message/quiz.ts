@@ -17,19 +17,21 @@ export default class Quiz extends MessageCommand {
     if (message.author.bot) return false;
 
     const { redis } = client;
-    const user = message.author;
+    const guild = message.guild;
     const channelId = message.channelId;
 
-    const keys = await redis.keys(`quiz:*:${user.id}:${channelId}`);
+    if (!guild) return false;
+
+    const keys = await redis.keys(`quiz:*:${guild.id}:${channelId}`);
     if (!keys[0]) return false;
     return true;
   }
 
   async execute({ client, message }: MessageCommandContext): Promise<void> {
     const { redis } = client;
-    const user = message.author;
+    const guild = message.guild!;
     const channel = message.channel as TextChannel;
-    const keys = await redis.keys(`quiz:*:${user.id}:${channel.id}`);
+    const keys = await redis.keys(`quiz:*:${guild.id}:${channel.id}`);
     const key = keys[0]!;
     const value = await redis.get(key);
     if (!value) return;
@@ -62,8 +64,6 @@ export default class Quiz extends MessageCommand {
     const res = data.media.titles.some(
       (title) => title.title.toLowerCase() === answer,
     );
-
-    console.log(JSON.stringify(data, null, 2));
 
     if (!res) {
       await channel.send(

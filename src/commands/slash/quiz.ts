@@ -1,5 +1,6 @@
 import type {
   ChatInputCommandInteraction,
+  Guild,
   SlashCommandStringOption,
   TextBasedChannel,
   User,
@@ -33,23 +34,24 @@ export const quiz = {
       ApplicationIntegrationType.GuildInstall,
       ApplicationIntegrationType.UserInstall,
     ])
-    .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild]),
+    .setContexts([InteractionContextType.Guild]),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const client = interaction.client as CustomDiscordClient;
     const { prisma, redis } = client;
     const user: User = interaction.user;
+    const guild: Guild | null = interaction.guild;
     const channel: TextBasedChannel | null = interaction.channel;
     const type = interaction.options.getString("type", true) as QuizType;
 
-    if (!channel) {
+    if (!channel || !guild) {
       await interaction.reply("Please use the quiz command in a valid channel");
       return;
     }
 
     await interaction.deferReply();
 
-    const pattern = `quiz:*:${user.id}:*`;
+    const pattern = `quiz:*:${guild.id}:*`;
     const keys = await redis.keys(pattern);
 
     if (keys.length > 1) {
@@ -72,8 +74,8 @@ export const quiz = {
       },
     });
 
-    if (!dbUser?.anilistUserId) {
-      await interaction.reply("Please run the /anilist to register");
+    if (!dbUser || !dbUser.anilistUserId) {
+      await interaction.editReply("Please run the ``/anilist`` to register");
       return;
     }
 
@@ -84,14 +86,14 @@ export const quiz = {
     });
 
     if (!anilistUser) {
-      await interaction.reply("Please run the /anilist to register");
+      await interaction.reply("Please run the ``/anilist`` to register");
       return;
     }
 
     const malIds = type === "anime" ? anilistUser.animeId : anilistUser.mangaId;
 
     if (malIds.length === 0) {
-      await interaction.reply(`Your ${type} list is empty`);
+      await interaction.editReply(`Your ${type} list is empty`);
       return;
     }
 
@@ -109,7 +111,7 @@ export const quiz = {
       return;
     }
 
-    const key = `quiz:${type}:${user.id}:${channel.id}`;
+    const key = `quiz:${type}:${guild.id}:${channel.id}`;
     await redis.set(key, JSON.stringify(quizData));
 
     const embed = new EmbedBuilder()
@@ -120,6 +122,9 @@ export const quiz = {
         `The quiz has started in <#${channel.id}>, please find the ${type} title.`,
       );
 
-    await interaction.editReply({ content: `<@!${user.id}>`, embeds: [embed] });
+    await interaction.editReply({
+      content: `Anilist of <@!${user.id}> used.`,
+      embeds: [embed],
+    });
   },
 };
