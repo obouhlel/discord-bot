@@ -27,9 +27,24 @@ export default class Quiz extends MessageCommand {
     return true;
   }
 
+  private _matchPercentage(
+    answer: string,
+    title: string,
+    threshold = 0.8,
+  ): boolean {
+    const answerWords = answer.toLowerCase().split(/\s+/);
+    const titleWords = title.toLowerCase().split(/\s+/);
+    const matchCount = titleWords.filter((word) =>
+      answerWords.includes(word),
+    ).length;
+    const percentage = matchCount / titleWords.length;
+    return percentage >= threshold;
+  }
+
   async execute({ client, message }: MessageCommandContext): Promise<void> {
     const { redis } = client;
     const guild = message.guild!;
+    const user = message.author;
     const channel = message.channel as TextChannel;
     const keys = await redis.keys(`quiz:*:${guild.id}:${channel.id}`);
     const key = keys[0]!;
@@ -61,16 +76,14 @@ export default class Quiz extends MessageCommand {
       return;
     }
 
-    const res = data.media.titles.some(
-      (title) => title.title.toLowerCase() === answer,
+    const res = data.media.titles.some((title) =>
+      this._matchPercentage(answer, title.title.toLowerCase()),
     );
 
     if (!res) {
       await channel.send(
-        "Wrong answer, type !hint for a clue, or !skip to give up.",
+        `Success! You found the good title. <@!${user.id}> +1 point!`,
       );
-    } else {
-      await channel.send("Success! You found the good title.");
       await redis.del(key);
     }
   }
