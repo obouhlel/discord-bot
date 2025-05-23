@@ -30,23 +30,20 @@ export default class Quiz extends MessageCommand {
   private _matchPercentage(
     answer: string,
     title: string,
-    threshold = 0.8,
+    threshold = 35,
   ): boolean {
     const answerWords = answer
       .toLowerCase()
-      .split(/[ !~?.,"'’\-_:;()\[\]{}<>/\\|@#$%^&*+=`]+/)
+      .split(/[ !~?.,"'’\-_:;()\]{}<>/\\|@#$%^&*+=`]+/)
       .filter(Boolean);
     const titleWords = title
       .toLowerCase()
-      .split(/[ !~?.,"'’\-_:;()\[\]{}<>/\\|@#$%^&*+=`]+/)
+      .split(/[ !~?.,"'’\-_:;()\]{}<>/\\|@#$%^&*+=`]+/)
       .filter(Boolean);
-    console.log("answer = ", answerWords);
-    console.log("title =", titleWords);
     const matchCount = titleWords.filter((word) =>
       answerWords.includes(word),
     ).length;
     const percentage = (matchCount / titleWords.length) * 100;
-    console.log("% = ", percentage);
     return percentage >= threshold;
   }
 
@@ -85,8 +82,8 @@ export default class Quiz extends MessageCommand {
       return;
     }
 
-    const res = data.media.titles.some(
-      (title) => answer === title.title.toLowerCase(),
+    const res = data.media.titles.some((title) =>
+      this._matchPercentage(answer, title.title.toLowerCase()),
     );
 
     if (res) {
