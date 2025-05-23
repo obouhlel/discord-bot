@@ -41,7 +41,6 @@ export default class Quiz extends MessageCommand {
     ).length;
     const threshold = titleWords.length > 3 ? 33 : 80;
     const percentage = (matchCount / titleWords.length) * 100;
-    console.log("% = ", percentage);
     return percentage >= threshold;
   }
 
@@ -79,8 +78,6 @@ export default class Quiz extends MessageCommand {
       await redis.del(key);
       return;
     }
-
-    console.log(data.media.titles);
 
     const res = data.media.titles.some((title) =>
       this._matchPercentage(answer, title.title.toLowerCase()),
