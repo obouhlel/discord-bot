@@ -6,7 +6,6 @@ import helmet from "@fastify/helmet";
 import cookie from "@fastify/cookie";
 import prismaPlugin from "plugins/prisma";
 import redisPlugin from "plugins/redis";
-import llmPlugin from "plugins/llm";
 import discordPlugin from "plugins/discord";
 import tokenPlugin from "plugins/token";
 
@@ -27,7 +26,6 @@ fastify.register(helmet);
 fastify.register(cookie, { secret: Bun.env.COOKIE_SECRET });
 fastify.register(prismaPlugin);
 fastify.register(redisPlugin);
-fastify.register(llmPlugin);
 fastify.register(discordPlugin);
 fastify.register(tokenPlugin);
 fastify.register(routes);

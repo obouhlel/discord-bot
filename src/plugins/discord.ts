@@ -13,7 +13,7 @@ const discordPlugin = fp(function (
   opts: FastifyPluginOptions,
   done: () => void,
 ) {
-  const discord = new DiscordService(server.redis, server.llm, server.prisma);
+  const discord = new DiscordService(server.redis, server.prisma);
   server.decorate("discord", discord);
   done();
 });

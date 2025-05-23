@@ -9,7 +9,6 @@ declare module "bun" {
     REDIRECT_URI: string;
     COOKIE_SECRET: string;
     REDIS_URL: string;
-    LLM_TOKEN: string;
     DATABASE_URL: string;
     FRONT_URL: string;
   }

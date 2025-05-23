@@ -1,6 +1,5 @@
 import CustomDiscordClient from "types/custom-discord-client";
 // services
-import type LLMService from "./llm";
 import type { RedisClient } from "bun";
 import type { PrismaClient } from "generated/prisma";
 // discord settings
@@ -19,7 +18,7 @@ export default class DiscordService {
   public readonly slashCommand: SlashCommand[];
   public readonly mapSlashCommand: Map<string, SlashCommand>;
 
-  constructor(redis: RedisClient, llm: LLMService, prisma: PrismaClient) {
+  constructor(redis: RedisClient, prisma: PrismaClient) {
     this.client = new CustomDiscordClient({
       intents: [
         GatewayIntentBits.Guilds,
@@ -41,7 +40,6 @@ export default class DiscordService {
     );
 
     this.client.redis = redis;
-    this.client.llm = llm;
     this.client.prisma = prisma;
   }
 
