@@ -27,11 +27,7 @@ export default class Quiz extends MessageCommand {
     return true;
   }
 
-  private _matchPercentage(
-    answer: string,
-    title: string,
-    threshold = 35,
-  ): boolean {
+  private _matchPercentage(answer: string, title: string): boolean {
     const answerWords = answer
       .toLowerCase()
       .split(/[ !~?.,"'’\-_:;()\]{}<>/\\|@#$%^&*+=`]+/)
@@ -43,7 +39,9 @@ export default class Quiz extends MessageCommand {
     const matchCount = titleWords.filter((word) =>
       answerWords.includes(word),
     ).length;
+    const threshold = titleWords.length > 3 ? 33 : 80;
     const percentage = (matchCount / titleWords.length) * 100;
+    console.log("% = ", percentage);
     return percentage >= threshold;
   }
 
@@ -82,13 +80,18 @@ export default class Quiz extends MessageCommand {
       return;
     }
 
+    console.log(data.media.titles);
+
     const res = data.media.titles.some((title) =>
       this._matchPercentage(answer, title.title.toLowerCase()),
     );
 
     if (res) {
+      const title = data.media.titles.find(
+        (title) => title.type === "Default",
+      )!.title;
       await channel.send(
-        `Success! You found the good title. <@!${user.id}> +1 point!`,
+        `Success! <@!${user.id}> +1 point! The title by default is : **${title}**.`,
       );
       await redis.del(key);
     }
