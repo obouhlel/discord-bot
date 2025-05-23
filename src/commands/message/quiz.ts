@@ -27,19 +27,27 @@ export default class Quiz extends MessageCommand {
     return true;
   }
 
-  private _matchPercentage(
-    answer: string,
-    title: string,
-    threshold = 0.8,
-  ): boolean {
-    const answerWords = answer.toLowerCase().split(/\s+/);
-    const titleWords = title.toLowerCase().split(/\s+/);
-    const matchCount = titleWords.filter((word) =>
-      answerWords.includes(word),
-    ).length;
-    const percentage = matchCount / titleWords.length;
-    return percentage >= threshold;
-  }
+  // private _matchPercentage(
+  //   answer: string,
+  //   title: string,
+  //   threshold = 0.8
+  // ): boolean {
+  //   const answerWords = answer
+  //     .toLowerCase()
+  //     .split(/[ !~?.,"'’\-_:;()\[\]{}<>/\\|@#$%^&*+=`]+/)
+  //     .filter(Boolean);
+  //   const titleWords = title
+  //     .toLowerCase()
+  //     .split(/[ !~?.,"'’\-_:;()\[\]{}<>/\\|@#$%^&*+=`]+/)
+  //     .filter(Boolean);
+  //   console.log(answerWords);
+  //   console.log(titleWords);
+  //   const matchCount = titleWords.filter((word) =>
+  //     answerWords.includes(word)
+  //   ).length;
+  //   const percentage = matchCount / titleWords.length;
+  //   return percentage >= threshold;
+  // }
 
   async execute({ client, message }: MessageCommandContext): Promise<void> {
     const { redis } = client;
@@ -76,8 +84,8 @@ export default class Quiz extends MessageCommand {
       return;
     }
 
-    const res = data.media.titles.some((title) =>
-      this._matchPercentage(answer, title.title.toLowerCase()),
+    const res = data.media.titles.some(
+      (title) => answer === title.title.toLowerCase(),
     );
 
     if (!res) {
