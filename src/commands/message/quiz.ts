@@ -59,6 +59,13 @@ export default class Quiz extends MessageCommand {
       return;
     }
 
+    if (answer === "!cheat" && user.id === "831543267194568744") {
+      await user.send(
+        `Cheat: The answers are:\n${data.titles.map((t) => `- ${t.title}`).join("\n")}`,
+      );
+      return;
+    }
+
     const res = data.titles.some(
       (title) =>
         this._matchPercentage(answer, title.title.toLowerCase()) ||
