@@ -126,7 +126,7 @@ export default class Quiz extends MessageCommand {
         .setTitle("Available Hint Parameters")
         .setColor("Gold")
         .setDescription(
-          `Use !hint with one or more of these parameters:\n${paramsList}\n**Example: \`!hint synopsis\` or \`!hint synopsis genres\``,
+          `Use !hint with one or more of these parameters:\n${paramsList}\n**Example:** \`!hint synopsis\` or \`!hint synopsis genres\``,
         );
       await channel.send({ embeds: [embed] });
       return;
