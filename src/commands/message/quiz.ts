@@ -59,8 +59,10 @@ export default class Quiz extends MessageCommand {
       return;
     }
 
-    const res = data.titles.some((title) =>
-      this._matchPercentage(answer, title.title.toLowerCase()),
+    const res = data.titles.some(
+      (title) =>
+        this._matchPercentage(answer, title.title.toLowerCase()) ||
+        answer === title.title.toLowerCase(),
     );
 
     if (res) {
