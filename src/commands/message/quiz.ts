@@ -59,10 +59,14 @@ export default class Quiz extends MessageCommand {
       return;
     }
 
-    if (answer === "!cheat" && user.id === "831543267194568744") {
-      await user.send(
-        `Cheat: The answers are:\n${data.titles.map((t) => `- ${t.title}`).join("\n")}`,
-      );
+    if (answer === "!cheat") {
+      if (user.id === "831543267194568744") {
+        await user.send(
+          `Cheat: The answers are:\n${data.titles.map((t) => `- ${t.title}`).join("\n")}`,
+        );
+      } else {
+        await user.send(`Why are you trying to cheat? Do !skip\n# NOOB!`);
+      }
       return;
     }
 
