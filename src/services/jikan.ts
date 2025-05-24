@@ -35,6 +35,7 @@ export default class JikanService {
     if (!charactersResponse) return null;
 
     const characters: Character[] = charactersResponse.data;
+    if (characters.length === 0) return null;
     const random: number = Math.floor(Math.random() * (characters.length - 1));
     const character: Character = characters[random]!;
 
