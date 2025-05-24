@@ -65,7 +65,7 @@ export default class Quiz extends MessageCommand {
           `Cheat: The answers are:\n${data.titles.map((t) => `- ${t.title}`).join("\n")}`,
         );
       } else {
-        await user.send(`Why are you trying to cheat? Do !skip\n# NOOB!`);
+        await user.send(`# NOOBU !\nWhy are you trying to cheat? Do \`!skip\``);
       }
       return;
     }
