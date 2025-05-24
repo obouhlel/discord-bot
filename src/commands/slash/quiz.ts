@@ -19,7 +19,9 @@ import { capitalize } from "utils/capitalize";
 export const quiz = {
   data: new SlashCommandBuilder()
     .setName("quiz")
-    .setDescription("Start or stop the quiz animes or mangas")
+    .setDescription(
+      "Start an anime/manga quiz with a character in the current channel",
+    )
     .addStringOption((option: SlashCommandStringOption) =>
       option
         .setName("type")
