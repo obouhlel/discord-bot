@@ -40,11 +40,16 @@ export default class JikanService {
 
     const name = character.character.name;
     const images = character.character.images.jpg.image_url;
+    const role = character.role;
 
     const titles = type === "anime" ? anime!.data.titles : manga!.data.titles;
+    const url = type === "anime" ? anime!.data.url : manga!.data.url;
 
     const synopsis =
       type === "anime" ? anime!.data.synopsis : manga!.data.synopsis;
+
+    const number =
+      type === "anime" ? anime!.data.episodes : manga!.data.chapters;
 
     const year =
       type === "anime"
@@ -60,13 +65,16 @@ export default class JikanService {
       character: {
         name,
         images,
+        role,
       },
-      media: {
-        titles,
+      hint: {
         synopsis,
+        number,
         year,
         genres,
       },
+      titles,
+      url,
     };
 
     return quizData;

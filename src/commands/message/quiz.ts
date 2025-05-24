@@ -1,7 +1,9 @@
 import type { MessageCommandContext } from "types/message-command";
+import type { HintQuiz, QuizData } from "types/quiz";
+import type { RedisClient } from "bun";
 import { EmbedBuilder, type TextChannel } from "discord.js";
-import type { QuizData } from "types/quiz";
 import { MessageCommand } from "types/message-command";
+import { capitalize } from "utils/capitalize";
 
 export default class Quiz extends MessageCommand {
   public readonly data = {
@@ -9,6 +11,13 @@ export default class Quiz extends MessageCommand {
     description:
       "You need to register with /anilist first. After that, use /quiz to start playing.",
   };
+
+  private readonly _hintParams = new Map([
+    ["synopsis", "The plot summary of the anime/manga"],
+    ["number", "The number of episodes/chapters"],
+    ["year", "The release year"],
+    ["genres", "The genres of the anime/manga"],
+  ]);
 
   async shouldExecute({
     client,
@@ -25,6 +34,50 @@ export default class Quiz extends MessageCommand {
     const keys = await redis.keys(`quiz:*:${guild.id}:${channelId}`);
     if (!keys[0]) return false;
     return true;
+  }
+
+  async execute({ client, message }: MessageCommandContext): Promise<void> {
+    const { redis } = client;
+    const guild = message.guild!;
+    const user = message.author;
+    const channel = message.channel as TextChannel;
+    const keys = await redis.keys(`quiz:*:${guild.id}:${channel.id}`);
+    const key = keys[0]!;
+    const value = await redis.get(key);
+    if (!value) return;
+
+    const data = JSON.parse(value) as QuizData;
+    const answer = message.content.toLowerCase();
+
+    if (answer.startsWith("!hint")) {
+      await this._hint(data, answer, channel);
+      return;
+    }
+
+    if (answer === "!skip") {
+      await this._skip(data, key, redis, channel);
+      return;
+    }
+
+    const res = data.titles.some((title) =>
+      this._matchPercentage(answer, title.title.toLowerCase()),
+    );
+
+    if (res) {
+      const title =
+        data.titles.find((title) => title.type === "English")?.title ??
+        data.titles.find((title) => title.type === "Default")!.title;
+      const url = data.url;
+
+      const embed = new EmbedBuilder()
+        .setColor("Green")
+        .setTitle(title)
+        .setDescription(`Success! <@${user.id}> +1 point!`)
+        .setURL(url);
+
+      await channel.send({ embeds: [embed] });
+      await redis.del(key);
+    }
   }
 
   private _matchPercentage(answer: string, title: string): boolean {
@@ -44,53 +97,68 @@ export default class Quiz extends MessageCommand {
     return percentage >= threshold;
   }
 
-  async execute({ client, message }: MessageCommandContext): Promise<void> {
-    const { redis } = client;
-    const guild = message.guild!;
-    const user = message.author;
-    const channel = message.channel as TextChannel;
-    const keys = await redis.keys(`quiz:*:${guild.id}:${channel.id}`);
-    const key = keys[0]!;
-    const value = await redis.get(key);
-    if (!value) return;
+  private async _hint(
+    data: QuizData,
+    answer: string,
+    channel: TextChannel,
+  ): Promise<void> {
+    const params = answer.split(" ").slice(1);
+    const validParams = params.filter((p) => this._hintParams.has(p));
 
-    const data = JSON.parse(value) as QuizData;
-    const answer = message.content.toLowerCase();
-
-    if (answer === "!hint") {
+    if (validParams.length === 0) {
+      const paramsList = Array.from(this._hintParams.entries())
+        .map(([key, desc]) => `• **${key}:** ${desc}`)
+        .join("\n");
       const embed = new EmbedBuilder()
+        .setTitle("Available Hint Parameters")
         .setColor("Gold")
-        .setTitle("Hint")
         .setDescription(
-          `📖 **Synopsis:** ${data.media.synopsis}\n🗓️ **Year:** ${data.media.year.toString()}\n🏷️ **Genres:** ${data.media.genres.join(", ")}`,
+          `Use !hint with one or more of these parameters:\n${paramsList}`,
         );
       await channel.send({ embeds: [embed] });
       return;
     }
 
-    if (answer === "!skip") {
-      const res = data.media.titles.find(
-        (title) => title.type === "Default",
-      )!.title;
-      await channel.send(
-        `You gave up on this character. The response is : **${res}**`,
-      );
-      await redis.del(key);
-      return;
-    }
+    for (const param of validParams) {
+      const hintValue = data.hint[
+        param.toLowerCase() as keyof typeof data.hint
+      ] as HintQuiz;
 
-    const res = data.media.titles.some((title) =>
-      this._matchPercentage(answer, title.title.toLowerCase()),
-    );
+      if (!hintValue) {
+        await channel.send(`**${param.toLowerCase()}** not found in database`);
+        continue;
+      }
 
-    if (res) {
-      const title = data.media.titles.find(
-        (title) => title.type === "Default",
-      )!.title;
-      await channel.send(
-        `Success! <@!${user.id}> +1 point! The title by default is : **${title}**.`,
-      );
-      await redis.del(key);
+      if (Array.isArray(hintValue)) {
+        await channel.send(
+          `>>> **${capitalize(param)}** :\n${hintValue.map((v) => `- ${v}`).join("\n")}`,
+        );
+      } else {
+        await channel.send(
+          `>>> **${capitalize(param)}** : ${String(hintValue)}`,
+        );
+      }
     }
+  }
+
+  private async _skip(
+    data: QuizData,
+    key: string,
+    redis: RedisClient,
+    channel: TextChannel,
+  ) {
+    const title =
+      data.titles.find((title) => title.type === "English")?.title ??
+      data.titles.find((title) => title.type === "Default")!.title;
+    const url = data.url;
+
+    const embed = new EmbedBuilder()
+      .setColor("Red")
+      .setTitle(title)
+      .setDescription(`You gave up on this character.`)
+      .setURL(url);
+
+    await channel.send({ embeds: [embed] });
+    await redis.del(key);
   }
 }

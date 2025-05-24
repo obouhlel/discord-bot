@@ -119,7 +119,7 @@ export const quiz = {
       .setTitle(quizData.character.name)
       .setImage(quizData.character.images)
       .setDescription(
-        `The quiz has started in <#${channel.id}>, please find the ${type} title.`,
+        `The quiz start in <#${channel.id}>. Find the ${type} title. Type \`!hint\` for a clue, or \`!skip\` to skip.`,
       );
 
     await interaction.editReply({
