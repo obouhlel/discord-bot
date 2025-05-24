@@ -31,7 +31,7 @@ export default class Quiz extends MessageCommand {
 
     if (!guild) return false;
 
-    const keys = await redis.keys(`quiz:*:${guild.id}:${channelId}`);
+    const keys = await redis.keys(`quiz:${guild.id}:${channelId}`);
     if (!keys[0]) return false;
     return true;
   }
@@ -41,7 +41,7 @@ export default class Quiz extends MessageCommand {
     const guild = message.guild!;
     const user = message.author;
     const channel = message.channel as TextChannel;
-    const keys = await redis.keys(`quiz:*:${guild.id}:${channel.id}`);
+    const keys = await redis.keys(`quiz:${guild.id}:${channel.id}`);
     const key = keys[0]!;
     const value = await redis.get(key);
     if (!value) return;

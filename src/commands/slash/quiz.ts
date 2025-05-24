@@ -53,17 +53,11 @@ export const quiz = {
 
     await interaction.deferReply();
 
-    const pattern = `quiz:*:${guild.id}:*`;
-    const keys = await redis.keys(pattern);
-
-    if (keys.length > 1) {
-      for (const key of keys) {
-        await redis.del(key);
-      }
-    }
+    const key = `quiz:${guild.id}:${channel.id}`;
+    const keys = await redis.keys(key);
 
     if (keys.length === 1) {
-      const channelId = keys[0]!.split(":", 4)[3]!;
+      const channelId = keys[0]!.split(":")[2]!;
       await interaction.editReply(
         `A quiz is already running in <#${channelId}>`,
       );
@@ -113,20 +107,18 @@ export const quiz = {
       return;
     }
 
-    const key = `quiz:${type}:${guild.id}:${channel.id}`;
-    await redis.set(key, JSON.stringify(quizData));
-
     const embed = new EmbedBuilder()
-      .setColor("Blue")
+      .setColor("Random")
       .setTitle(quizData.character.name)
       .setImage(quizData.character.images)
       .setDescription(
-        `The quiz start in <#${channel.id}>. Find the ${type} title. Type \`!hint\` for a clue, or \`!skip\` to skip.`,
+        `The quiz starts in <#${channel.id}>. Find the ${type} title. Type \`!hint\` for a clue, or \`!skip\` to skip. (The quiz will expire in 1h)`,
       );
 
     await interaction.editReply({
       content: `Anilist of <@!${user.id}> used.`,
       embeds: [embed],
     });
+    await redis.set(key, JSON.stringify(quizData), "EX", 60 * 60);
   },
 };
