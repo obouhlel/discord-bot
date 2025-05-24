@@ -5,15 +5,20 @@ export interface TitleMedia {
   title: string;
 }
 
+export type HintQuiz = string | number | boolean | string[] | undefined;
+
 export interface QuizData {
   character: {
     name: string;
     images: string;
+    role: string;
   };
-  media: {
-    titles: TitleMedia[];
-    synopsis: string;
-    year: number;
-    genres: string[];
+  hint: {
+    synopsis?: string;
+    number?: number;
+    year?: number;
+    genres?: string[];
   };
+  titles: TitleMedia[];
+  url: string;
 }
