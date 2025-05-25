@@ -1,9 +1,10 @@
 import type { MessageCommandContext } from "types/message-command";
-import { QuizDataBuilder, type QuizHint } from "types/quiz";
+import type { QuizHint } from "types/quiz";
 import type { RedisClient } from "bun";
-import { EmbedBuilder, User, type TextChannel } from "discord.js";
+import type { TextChannel } from "discord.js";
+import { QuizDataBuilder } from "types/quiz";
+import { EmbedBuilder, User } from "discord.js";
 import { MessageCommand } from "types/message-command";
-import { capitalize } from "utils/capitalize";
 
 export default class Quiz extends MessageCommand {
   public readonly data = {
@@ -12,7 +13,7 @@ export default class Quiz extends MessageCommand {
       "You need to register with /anilist first. After that, use /quiz to start playing.",
   };
 
-  private readonly _cheater = new Set(["831543267194568744"]);
+  private _cheater = new Set(["831543267194568744"]);
 
   async shouldExecute({
     client,
@@ -88,16 +89,12 @@ export default class Quiz extends MessageCommand {
         await channel.send(`The \`${param}\` not found in database`);
         return;
       }
-      await channel.send(
-        `# ${capitalize(param)}\n>>> ${Array.isArray(hint) ? hint.map((h) => `- ${h}`).join("\n") : String(hint)}`,
-      );
-    } else if (param && /^[1-4]$/.test(param)) {
+      await data.sendHint(channel, param as keyof QuizHint, hint);
+    } else if (param && /^[1-5]$/.test(param)) {
       const result = data.getHintByNumber(Number(param));
       if (!result) return;
       const [key, value] = result;
-      await channel.send(
-        `# ${capitalize(key)}\n>>> ${Array.isArray(value) ? value.map((h) => `- ${h}`).join("\n") : String(value)}`,
-      );
+      await data.sendHint(channel, key, value);
     } else {
       const embed = data.getHintInfo();
       await channel.send({ embeds: [embed] });
@@ -107,13 +104,14 @@ export default class Quiz extends MessageCommand {
   private async _cheat(user: User, data: QuizDataBuilder) {
     if (this._cheater.has(user.id)) {
       await user.send(
-        `Cheat: The answers are:\n${data
+        `# E---R-R----O--R SENDING RESPONSE\nCheat: The answers are:\n${data
           .getTitles()
           .map((t) => `- ${t.title}`)
           .join("\n")}`,
       );
     } else {
       await user.send(`# NOOBU !\nWhy are you trying to cheat? Do \`!skip\``);
+      this._cheater.add(user.id);
     }
   }
 

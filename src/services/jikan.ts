@@ -62,6 +62,11 @@ export default class JikanService {
         ? anime!.data.genres.map((genre) => genre.name)
         : manga!.data.genres.map((genre) => genre.name);
 
+    const cover =
+      type === "anime"
+        ? anime!.data.images.jpg.large_image_url
+        : manga!.data.images.jpg.large_image_url;
+
     const quizData: QuizData = {
       character: {
         name,
@@ -73,6 +78,7 @@ export default class JikanService {
         number,
         year,
         genres,
+        cover,
       },
       titles,
       url,

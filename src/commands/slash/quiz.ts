@@ -83,21 +83,14 @@ export const quiz = {
       .setDescription(`Role: ${data.getCharater().role}`)
       .setImage(data.getCharater().images);
 
+    await redis.set(key, data.toJSON());
+
     await interaction.editReply({
-      content: `# Quiz\n- Using <@!${user.id}>'s Anilist.\n- The quiz starts in <#${channel.id}>.\n- Find the ${type} title (33% accuracy needed for long titles).\n- Type \`!hint\` for a clue, or \`!skip\` to skip.\n- You have **5 minutes** to find it.`,
+      content: `# Quiz ${type}\n- Using <@!${user.id}>'s Anilist.\n- The quiz starts in <#${channel.id}>.\n- Find the ${type} title (33% accuracy needed for long titles).\n- Type \`!hint\` for a clue, or \`!skip\` to skip.\n- You have **5 minutes** to find it.`,
       embeds: [embed],
     });
-    await redis.set(key, data.toJSON());
-    setTimeout(
-      () => {
-        timeout(redis, key, channel as TextChannel)
-          .then()
-          .catch((error: unknown) => {
-            console.error(error);
-          });
-      },
-      5 * 60 * 1000,
-    );
+
+    startQuizCountdown(redis, key, channel as TextChannel);
   },
 };
 
@@ -148,7 +141,47 @@ async function getQuizData(
   return new QuizDataBuilder(data);
 }
 
-async function timeout(redis: RedisClient, key: string, channel: TextChannel) {
+function startQuizCountdown(
+  redis: RedisClient,
+  key: string,
+  channel: TextChannel,
+) {
+  setTimeout(
+    () => {
+      notifyOneMinuteLeft(channel)
+        .then()
+        .catch((error: unknown) => {
+          console.error(error);
+        });
+    },
+    4 * 60 * 1000,
+  );
+  setTimeout(
+    () => {
+      closeQuizSession(redis, key, channel)
+        .then()
+        .catch((error: unknown) => {
+          console.error(error);
+        });
+    },
+    5 * 60 * 1000,
+  );
+}
+
+async function notifyOneMinuteLeft(channel: TextChannel) {
+  const embed = new EmbedBuilder()
+    .setColor("Yellow")
+    .setTitle("⚠️ One minute remaining!")
+    .setDescription("Hurry up! Only 60 seconds left to find the answer.");
+
+  await channel.send({ embeds: [embed] });
+}
+
+async function closeQuizSession(
+  redis: RedisClient,
+  key: string,
+  channel: TextChannel,
+) {
   const value = await redis.get(key);
   if (!value) throw new Error("The key is already destroyed");
 

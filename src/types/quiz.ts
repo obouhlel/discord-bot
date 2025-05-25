@@ -1,4 +1,5 @@
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, TextChannel } from "discord.js";
+import { capitalize } from "utils/capitalize";
 
 export type QuizType = "anime" | "manga";
 
@@ -15,6 +16,7 @@ export interface QuizHint {
   number?: number;
   year?: number;
   genres?: string[];
+  cover?: string;
 }
 
 export interface TitleMedia {
@@ -33,17 +35,19 @@ export class QuizDataBuilder {
   private _data: QuizData;
 
   private readonly _hintParams = new Map([
+    ["cover", "The cover of the anime/manga"],
     ["synopsis", "The plot summary of the anime/manga"],
-    ["number", "The number of episodes/chapters"],
-    ["year", "The release year"],
     ["genres", "The genres of the anime/manga"],
+    ["year", "The release year"],
+    ["number", "The number of episodes/chapters"],
   ]);
 
   private readonly _hintNumberParams = new Map([
-    [1, "synopsis" as keyof QuizHint],
-    [2, "number" as keyof QuizHint],
-    [3, "year" as keyof QuizHint],
-    [4, "genres" as keyof QuizHint],
+    [1, "cover" as keyof QuizHint],
+    [2, "synopsis" as keyof QuizHint],
+    [3, "genres" as keyof QuizHint],
+    [4, "year" as keyof QuizHint],
+    [5, "number" as keyof QuizHint],
   ]);
 
   constructor(data: QuizData | string) {
@@ -85,10 +89,37 @@ export class QuizDataBuilder {
     return this._data.hint[hint];
   }
 
-  public getHintByNumber(index: number): [string, QuizHintType] | null {
+  public getHintByNumber(index: number): [keyof QuizHint, QuizHintType] | null {
     const hint = this._hintNumberParams.get(index);
     if (!hint) return null;
-    return [String(hint), this._data.hint[hint]];
+    return [hint, this._data.hint[hint]];
+  }
+
+  public async sendHint(
+    channel: TextChannel,
+    key: keyof QuizHint,
+    value: QuizHintType,
+  ) {
+    if (!value) return;
+    if (key === "genres") {
+      const v = value as string[];
+      await channel.send(
+        `**Genres:**\n${v.map((genre) => `- ${genre}\n`).join("")}`,
+      );
+    } else if (key === "cover") {
+      const embed = new EmbedBuilder()
+        .setImage(value as string)
+        .setColor("Random");
+      await channel.send({ embeds: [embed] });
+    } else if (key === "number") {
+      await channel.send(`**Number of episode/chapter:** ${value.toString()}`);
+    } else if (key === "year") {
+      await channel.send(`**Started at:** ${value.toString()}`);
+    } else {
+      await channel.send(
+        `# ${capitalize(key.toString())}\n>>> ${value.toString()}`,
+      );
+    }
   }
 
   public getHintInfo(): EmbedBuilder {
@@ -106,7 +137,7 @@ export class QuizDataBuilder {
 
   private _matchPercentage(answer: string, title: string): boolean {
     const regex =
-      /[\s!~?.,"'’\-_:;()[\]{}<>/\\|@#$%^&*+=×`]+|season\s*\d*|part\s*\d*|oav|ona|movie/;
+      /[\s!~?.,"'’\-_:;()[\]{}<>/\\|@#$%^&*+=×`]+|\d+[a-zA-Z]*\s*season\s*\d+[a-zA-Z]*|part\s*\d*|oav|ona|movie/;
     const answerWords = answer.toLowerCase().split(regex).filter(Boolean);
     const titleWords = title.toLowerCase().split(regex).filter(Boolean);
     const matchCount = titleWords.filter((word) =>
