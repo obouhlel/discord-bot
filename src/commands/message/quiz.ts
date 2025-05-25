@@ -1,7 +1,7 @@
 import type { MessageCommandContext } from "types/message-command";
-import type { HintQuiz, QuizData } from "types/quiz";
+import { QuizDataBuilder, type QuizHint } from "types/quiz";
 import type { RedisClient } from "bun";
-import { EmbedBuilder, type TextChannel } from "discord.js";
+import { EmbedBuilder, User, type TextChannel } from "discord.js";
 import { MessageCommand } from "types/message-command";
 import { capitalize } from "utils/capitalize";
 
@@ -12,12 +12,7 @@ export default class Quiz extends MessageCommand {
       "You need to register with /anilist first. After that, use /quiz to start playing.",
   };
 
-  private readonly _hintParams = new Map([
-    ["synopsis", "The plot summary of the anime/manga"],
-    ["number", "The number of episodes/chapters"],
-    ["year", "The release year"],
-    ["genres", "The genres of the anime/manga"],
-  ]);
+  private readonly _cheater = new Set(["831543267194568744"]);
 
   async shouldExecute({
     client,
@@ -46,11 +41,11 @@ export default class Quiz extends MessageCommand {
     const value = await redis.get(key);
     if (!value) return;
 
-    const data = JSON.parse(value) as QuizData;
+    const data = new QuizDataBuilder(value);
     const answer = message.content.toLowerCase();
 
     if (answer.startsWith("!hint")) {
-      await this._hint(data, answer, channel);
+      await this._hint(answer, channel, data);
       return;
     }
 
@@ -60,27 +55,15 @@ export default class Quiz extends MessageCommand {
     }
 
     if (answer === "!cheat") {
-      if (user.id === "831543267194568744") {
-        await user.send(
-          `Cheat: The answers are:\n${data.titles.map((t) => `- ${t.title}`).join("\n")}`,
-        );
-      } else {
-        await user.send(`# NOOBU !\nWhy are you trying to cheat? Do \`!skip\``);
-      }
+      await this._cheat(user, data);
       return;
     }
 
-    const res = data.titles.some(
-      (title) =>
-        this._matchPercentage(answer, title.title.toLowerCase()) ||
-        answer === title.title.toLowerCase(),
-    );
+    const res = data.checkTitles(answer);
 
     if (res) {
-      const title =
-        data.titles.find((title) => title.type === "English")?.title ??
-        data.titles.find((title) => title.type === "Default")!.title;
-      const url = data.url;
+      const title = data.getTitle();
+      const url = data.getUrl();
 
       const embed = new EmbedBuilder()
         .setColor("Green")
@@ -93,73 +76,55 @@ export default class Quiz extends MessageCommand {
     }
   }
 
-  private _matchPercentage(answer: string, title: string): boolean {
-    const regex =
-      /[\s!~?.,"'’\-_:;()[\]{}<>/\\|@#$%^&*+=×`]+|season\s*\d*|part\s*\d*/;
-    const answerWords = answer.toLowerCase().split(regex).filter(Boolean);
-    const titleWords = title.toLowerCase().split(regex).filter(Boolean);
-    const matchCount = titleWords.filter((word) =>
-      answerWords.includes(word),
-    ).length;
-    const threshold = titleWords.length > 3 ? 33 : 80;
-    const percentage = Math.floor((matchCount / titleWords.length) * 100);
-    return percentage >= threshold;
-  }
-
   private async _hint(
-    data: QuizData,
     answer: string,
     channel: TextChannel,
-  ): Promise<void> {
-    const params = answer.split(" ").slice(1);
-    const validParams = params.filter((p) => this._hintParams.has(p));
-
-    if (validParams.length === 0) {
-      const paramsList = Array.from(this._hintParams.entries())
-        .map(([key, desc]) => `• **${key}:** ${desc}`)
-        .join("\n");
-      const embed = new EmbedBuilder()
-        .setTitle("Available Hint Parameters")
-        .setColor("Gold")
-        .setDescription(
-          `Use !hint with one or more of these parameters:\n${paramsList}\n**Example:** \`!hint synopsis\` or \`!hint synopsis genres\``,
-        );
+    data: QuizDataBuilder,
+  ) {
+    const [, param] = answer.split(" ");
+    if (param && param in data.getHints()) {
+      const hint = data.getHint(param as keyof QuizHint);
+      if (!hint) {
+        await channel.send(`The \`${param}\` not found in database`);
+        return;
+      }
+      await channel.send(
+        `# ${capitalize(param)}\n>>> ${Array.isArray(hint) ? hint.map((h) => `- ${h}`).join("\n") : String(hint)}`,
+      );
+    } else if (param && /^[1-4]$/.test(param)) {
+      const result = data.getHintByNumber(Number(param));
+      if (!result) return;
+      const [key, value] = result;
+      await channel.send(
+        `# ${capitalize(key)}\n>>> ${Array.isArray(value) ? value.map((h) => `- ${h}`).join("\n") : String(value)}`,
+      );
+    } else {
+      const embed = data.getHintInfo();
       await channel.send({ embeds: [embed] });
-      return;
     }
+  }
 
-    for (const param of validParams) {
-      const hintValue = data.hint[
-        param.toLowerCase() as keyof typeof data.hint
-      ] as HintQuiz;
-
-      if (!hintValue) {
-        await channel.send(`**${param.toLowerCase()}** not found in database`);
-        continue;
-      }
-
-      if (Array.isArray(hintValue)) {
-        await channel.send(
-          `>>> **${capitalize(param)}** :\n${hintValue.map((v) => `- ${v}`).join("\n")}`,
-        );
-      } else {
-        await channel.send(
-          `>>> **${capitalize(param)}** : ${String(hintValue)}`,
-        );
-      }
+  private async _cheat(user: User, data: QuizDataBuilder) {
+    if (this._cheater.has(user.id)) {
+      await user.send(
+        `Cheat: The answers are:\n${data
+          .getTitles()
+          .map((t) => `- ${t.title}`)
+          .join("\n")}`,
+      );
+    } else {
+      await user.send(`# NOOBU !\nWhy are you trying to cheat? Do \`!skip\``);
     }
   }
 
   private async _skip(
-    data: QuizData,
+    data: QuizDataBuilder,
     key: string,
     redis: RedisClient,
     channel: TextChannel,
   ) {
-    const title =
-      data.titles.find((title) => title.type === "English")?.title ??
-      data.titles.find((title) => title.type === "Default")!.title;
-    const url = data.url;
+    const title = data.getTitle();
+    const url = data.getUrl();
 
     const embed = new EmbedBuilder()
       .setColor("Red")

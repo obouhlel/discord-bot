@@ -1,8 +1,10 @@
+import type { RedisClient } from "bun";
 import type {
   ChatInputCommandInteraction,
   Guild,
   SlashCommandStringOption,
   TextBasedChannel,
+  TextChannel,
   User,
 } from "discord.js";
 import {
@@ -11,9 +13,10 @@ import {
   InteractionContextType,
   SlashCommandBuilder,
 } from "discord.js";
+import type { AnilistUser, PrismaClient } from "generated/prisma";
 import JikanService from "services/jikan";
 import type CustomDiscordClient from "types/custom-discord-client";
-import type { QuizData, QuizType } from "types/quiz";
+import { QuizDataBuilder, type QuizData, type QuizType } from "types/quiz";
 import { capitalize } from "utils/capitalize";
 
 export const quiz = {
@@ -51,74 +54,112 @@ export const quiz = {
       return;
     }
 
+    const key = `quiz:${guild.id}:${channel.id}`;
+
     await interaction.deferReply();
 
-    const key = `quiz:${guild.id}:${channel.id}`;
-    const keys = await redis.keys(key);
-
-    if (keys.length === 1) {
-      const channelId = keys[0]!.split(":")[2]!;
+    if (await alreadyRunning(redis, key)) {
       await interaction.editReply(
-        `A quiz is already running in <#${channelId}>`,
+        `A quiz is already running in <#${channel.id}>`,
       );
       return;
     }
 
-    const dbUser = await prisma.user.findUnique({
-      where: {
-        discordId: user.id,
-      },
-    });
-
-    if (!dbUser || !dbUser.anilistUserId) {
+    const anilistUser = await getAnilistUser(prisma, user);
+    if (!anilistUser) {
       await interaction.editReply("Please run the ``/anilist`` to register");
       return;
     }
 
-    const anilistUser = await prisma.anilistUser.findUnique({
-      where: {
-        id: dbUser.anilistUserId,
-      },
-    });
-
-    if (!anilistUser) {
-      await interaction.reply("Please run the ``/anilist`` to register");
-      return;
-    }
-
-    const malIds = type === "anime" ? anilistUser.animeId : anilistUser.mangaId;
-
-    if (malIds.length === 0) {
-      await interaction.editReply(`Your ${type} list is empty`);
-      return;
-    }
-
-    const index = Math.floor(Math.random() * (malIds.length - 1));
-    const malId = malIds[index]!;
-    const jikanService = new JikanService();
-
-    const quizData: QuizData | null = await jikanService.getQuizData(
-      malId,
-      type,
-    );
-
-    if (!quizData) {
+    const data = await getQuizData(anilistUser, type);
+    if (!data) {
       await interaction.editReply(`${capitalize(type)} not found`);
       return;
     }
 
     const embed = new EmbedBuilder()
       .setColor("Random")
-      .setTitle(quizData.character.name)
-      .setImage(quizData.character.images)
-      .setDescription(
-        `The quiz starts in <#${channel.id}>. Find the ${type} title. Type \`!hint\` for a clue, or \`!skip\` to skip. (The quiz will expire in 1h)`,
-      );
+      .setTitle(data.getCharater().name)
+      .setDescription(`Role: ${data.getCharater().role}`)
+      .setImage(data.getCharater().images);
 
     await interaction.editReply({
-      content: `Anilist of <@!${user.id}> used.`,
+      content: `# Quiz\n- Using <@!${user.id}>'s Anilist.\n- The quiz starts in <#${channel.id}>.\n- Find the ${type} title (33% accuracy needed for long titles).\n- Type \`!hint\` for a clue, or \`!skip\` to skip.\n- You have **5 minutes** to find it.`,
       embeds: [embed],
     });
-    await redis.set(key, JSON.stringify(quizData), "EX", 60 * 60);
+    await redis.set(key, data.toJSON());
+    setTimeout(
+      () => {
+        timeout(redis, key, channel as TextChannel)
+          .then()
+          .catch((error: unknown) => {
+            console.error(error);
+          });
+      },
+      5 * 60 * 1000,
+    );
   },
 };
+
+async function alreadyRunning(
+  redis: RedisClient,
+  key: string,
+): Promise<boolean> {
+  const keys = await redis.keys(key);
+
+  if (keys.length === 1) {
+    return true;
+  }
+  return false;
+}
+
+async function getAnilistUser(
+  prisma: PrismaClient,
+  user: User,
+): Promise<AnilistUser | null> {
+  const dbUser = await prisma.user.findUnique({
+    where: {
+      discordId: user.id,
+    },
+  });
+
+  if (!dbUser || !dbUser.anilistUserId) return null;
+
+  const anilistUser = await prisma.anilistUser.findUnique({
+    where: {
+      id: dbUser.anilistUserId,
+    },
+  });
+
+  return anilistUser;
+}
+
+async function getQuizData(
+  anilistUser: AnilistUser,
+  type: QuizType,
+): Promise<QuizDataBuilder | null> {
+  const malIds = type === "anime" ? anilistUser.animeId : anilistUser.mangaId;
+  const index = Math.floor(Math.random() * (malIds.length - 1));
+  const malId = malIds[index]!;
+  const jikanService = new JikanService();
+
+  const data: QuizData | null = await jikanService.getQuizData(malId, type);
+  if (!data) return null;
+  return new QuizDataBuilder(data);
+}
+
+async function timeout(redis: RedisClient, key: string, channel: TextChannel) {
+  const value = await redis.get(key);
+  if (!value) throw new Error("The key is already destroyed");
+
+  const data = new QuizDataBuilder(value);
+
+  const embed = new EmbedBuilder()
+    .setColor("White")
+    .setTitle(data.getTitle())
+    .setDescription("⏰ Time's up! The quiz has ended.")
+    .setURL(data.getUrl());
+
+  await redis.del(key);
+  await channel.send({ embeds: [embed] });
+}
