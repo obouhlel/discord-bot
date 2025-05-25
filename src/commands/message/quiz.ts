@@ -104,14 +104,13 @@ export default class Quiz extends MessageCommand {
   private async _cheat(user: User, data: QuizDataBuilder) {
     if (this._cheater.has(user.id)) {
       await user.send(
-        `# E---R-R----O--R SENDING RESPONSE\nCheat: The answers are:\n${data
+        `Cheat: The answers are:\n${data
           .getTitles()
           .map((t) => `- ${t.title}`)
           .join("\n")}`,
       );
     } else {
       await user.send(`# NOOBU !\nWhy are you trying to cheat? Do \`!skip\``);
-      this._cheater.add(user.id);
     }
   }
 
