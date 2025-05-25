@@ -145,7 +145,12 @@ export class QuizDataBuilder {
     const matchCount = titleWords.filter((word) =>
       answerWords.includes(word),
     ).length;
-    const threshold = titleWords.length > 3 && title.length > 20 ? 33 : 100;
+    if (titleWords.length <= 3) {
+      const threshold = 100;
+      const percentage = Math.floor((matchCount / titleWords.length) * 100);
+      return percentage >= threshold;
+    }
+    const threshold = title.length > 20 ? 10 : 33;
     const percentage = Math.floor((matchCount / titleWords.length) * 100);
     return percentage >= threshold;
   }
