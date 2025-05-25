@@ -150,7 +150,7 @@ export class QuizDataBuilder {
       const percentage = Math.floor((matchCount / titleWords.length) * 100);
       return percentage >= threshold;
     }
-    const threshold = title.length > 20 ? 10 : 33;
+    const threshold = title.length > 30 ? 20 : 33;
     const percentage = Math.floor((matchCount / titleWords.length) * 100);
     return percentage >= threshold;
   }
