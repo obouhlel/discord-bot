@@ -93,7 +93,7 @@ export const quiz = {
       `# ${capitalize(type)} Quiz`,
       `- Using <@!${user.id}>'s AniList`,
       `- Active in <#${channel.id}>`,
-      `- Guess the ${type} title in English or Japanese`,
+      `- Guess the ${type} title`,
       "- **Answer Requirements:**",
       `  - Don't need to put season or part`,
       `    - Example: \`Attack on Titan season 3 part 2\` or \`Attack on Titan 2\``,

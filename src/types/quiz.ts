@@ -169,13 +169,11 @@ export class QuizDataBuilder {
     timeouts: Map<string, NodeJS.Timeout>,
   ): Promise<void> {
     const timeoutOne = timeouts.get(key + ":one");
-    console.log(timeoutOne);
     if (timeoutOne) {
       clearTimeout(timeoutOne);
       timeouts.delete(key + ":one");
     }
     const timeoutEnd = timeouts.get(key + ":end");
-    console.log(timeoutEnd);
     if (timeoutEnd) {
       clearTimeout(timeoutEnd);
       timeouts.delete(key + ":end");
