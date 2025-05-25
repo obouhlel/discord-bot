@@ -146,6 +146,7 @@ function startQuizCountdown(
   key: string,
   channel: TextChannel,
 ) {
+  const min = 3;
   setTimeout(
     () => {
       notifyOneMinuteLeft(channel)
@@ -154,7 +155,7 @@ function startQuizCountdown(
           console.error(error);
         });
     },
-    4 * 60 * 1000,
+    (min - 1) * 60 * 1000,
   );
   setTimeout(
     () => {
@@ -164,7 +165,7 @@ function startQuizCountdown(
           console.error(error);
         });
     },
-    5 * 60 * 1000,
+    min * 60 * 1000,
   );
 }
 
