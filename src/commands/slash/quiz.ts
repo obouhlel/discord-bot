@@ -82,7 +82,7 @@ export const quiz = {
       return;
     }
 
-    const content = `# ${capitalize(type)} Quiz\n- Using <@!${user.id}>'s AniList\n- Active in <#${channel.id}>\n- Guess the ${type} title (33% accuracy needed for long titles (over 3 words and 20 characters); season numbers and special characters are optional)\n- Commands: \`!hint\` for a hint, \`!skip\` to skip\n- Duration: **5 minutes**`;
+    const content = `# ${capitalize(type)} Quiz\n- Using <@!${user.id}>'s AniList\n- Active in <#${channel.id}>\n- Guess the ${type} title (33% accuracy needed for long titles (over 3 words and 20 characters); season numbers and special characters are optional)\n- Commands: \`!hint\` for a hint, \`!skip\` to skip\n- Duration: **3 minutes**`;
 
     const embed = new EmbedBuilder()
       .setColor("Random")
