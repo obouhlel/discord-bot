@@ -4,12 +4,23 @@ import { capitalize } from "utils/capitalize";
 
 export type QuizType = "anime" | "manga";
 
-export type QuizHintType = string | number | string[] | undefined;
+export type QuizHintType =
+  | string
+  | number
+  | string[]
+  | QuizCharacters[]
+  | undefined;
 
 export interface QuizCharacter {
+  id: number;
   name: string;
-  images: string;
-  role: string;
+  image: string;
+}
+
+export interface QuizCharacters {
+  id: number;
+  name: string;
+  image: string;
 }
 
 export interface QuizHint {
@@ -18,6 +29,7 @@ export interface QuizHint {
   year?: number;
   genres?: string[];
   cover?: string;
+  characters: QuizCharacters[];
 }
 
 export interface TitleMedia {
@@ -30,6 +42,7 @@ export interface QuizData {
   hint: QuizHint;
   titles: TitleMedia[];
   url: string;
+  type: QuizType;
 }
 
 export class QuizDataBuilder {
@@ -41,6 +54,7 @@ export class QuizDataBuilder {
     ["genres", "The genres of the anime/manga"],
     ["year", "The release year"],
     ["number", "The number of episodes/chapters"],
+    ["characters", "An other character of anime/manga"],
   ]);
 
   private readonly _hintNumberParams = new Map([
@@ -49,6 +63,7 @@ export class QuizDataBuilder {
     [3, "genres" as keyof QuizHint],
     [4, "year" as keyof QuizHint],
     [5, "number" as keyof QuizHint],
+    [6, "characters" as keyof QuizHint],
   ]);
 
   private readonly _regex: RegExp =
@@ -116,12 +131,31 @@ export class QuizDataBuilder {
         .setColor("Random");
       await channel.send({ embeds: [embed] });
     } else if (key === "number") {
-      await channel.send(`**Number of episode/chapter:** ${value.toString()}`);
+      const v = value as number;
+      await channel.send(`**Number of episode/chapter:** ${v.toString()}`);
     } else if (key === "year") {
-      await channel.send(`**Started at:** ${value.toString()}`);
+      const v = value as number;
+      await channel.send(`**Started at:** ${v.toString()}`);
+    } else if (key === "characters") {
+      const v = value as QuizCharacters[];
+      if (v.length === 0) {
+        await channel.send("All characters have been sent");
+        return;
+      }
+      const random = Math.floor(Math.random() * (v.length - 1));
+      const character = v[random]!;
+      const embed = new EmbedBuilder()
+        .setColor("Random")
+        .setTitle(character.name)
+        .setImage(character.image);
+      this._data.hint.characters = this._data.hint.characters.filter(
+        (c) => character.id != c.id,
+      );
+      await channel.send({ embeds: [embed] });
     } else {
+      const v = value as string;
       await channel.send(
-        `# ${capitalize(key.toString())}\n>>> ${value.toString()}`,
+        `# ${capitalize(key.toString())}\n>>> ${v.toString()}`,
       );
     }
   }

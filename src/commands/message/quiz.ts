@@ -47,6 +47,8 @@ export default class Quiz extends MessageCommand {
 
     if (answer.startsWith("!hint")) {
       await this._hint(answer, channel, data);
+      const dataRaw = data.toJSON();
+      await redis.set(key, dataRaw);
       return;
     }
 
@@ -90,7 +92,7 @@ export default class Quiz extends MessageCommand {
         return;
       }
       await data.sendHint(channel, param as keyof QuizHint, hint);
-    } else if (param && /^[1-5]$/.test(param)) {
+    } else if (param && /^[1-6]$/.test(param)) {
       const result = data.getHintByNumber(Number(param));
       if (!result) return;
       const [key, value] = result;

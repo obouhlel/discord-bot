@@ -110,8 +110,7 @@ export const quiz = {
     const embed = new EmbedBuilder()
       .setColor("Random")
       .setTitle(data.getCharater().name)
-      .setDescription(`Role: ${data.getCharater().role}`)
-      .setImage(data.getCharater().images);
+      .setImage(data.getCharater().image);
 
     await interaction.editReply({ content: content, embeds: [embed] });
     startQuizCountdown(redis, key, channel as TextChannel, timeouts);

@@ -1,7 +1,7 @@
 import axios from "axios";
-import type { Character, CharacterResponse } from "types/characters";
+import type { Character, CharacterResponse } from "types/characters-response";
 import type { AnimeResponse } from "types/anime-response";
-import type { QuizData, QuizType } from "types/quiz";
+import type { QuizCharacters, QuizData, QuizType } from "types/quiz";
 import type { MangaResponse } from "types/manga-response";
 
 export default class JikanService {
@@ -34,14 +34,23 @@ export default class JikanService {
     )) as CharacterResponse | null;
     if (!charactersResponse) return null;
 
-    const characters: Character[] = charactersResponse.data;
-    if (characters.length === 0) return null;
-    const random: number = Math.floor(Math.random() * (characters.length - 1));
-    const character: Character = characters[random]!;
+    const charactersData: Character[] = charactersResponse.data;
+    if (charactersData.length === 0) return null;
+    const random: number = Math.floor(
+      Math.random() * (charactersData.length - 1),
+    );
+    const character: Character = charactersData[random]!;
 
+    const characterId = character.character.mal_id;
+    const characters: QuizCharacters[] = charactersData
+      .map((c) => ({
+        id: c.character.mal_id,
+        name: c.character.name,
+        image: c.character.images.jpg.image_url,
+      }))
+      .filter((c) => c.id !== characterId);
     const name = character.character.name;
-    const images = character.character.images.jpg.image_url;
-    const role = character.role;
+    const image = character.character.images.jpg.image_url;
 
     const titles = type === "anime" ? anime!.data.titles : manga!.data.titles;
     const url = type === "anime" ? anime!.data.url : manga!.data.url;
@@ -69,9 +78,9 @@ export default class JikanService {
 
     const quizData: QuizData = {
       character: {
+        id: characterId,
         name,
-        images,
-        role,
+        image,
       },
       hint: {
         synopsis,
@@ -79,9 +88,11 @@ export default class JikanService {
         year,
         genres,
         cover,
+        characters,
       },
       titles,
       url,
+      type,
     };
 
     return quizData;
