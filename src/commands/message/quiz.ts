@@ -94,19 +94,15 @@ export default class Quiz extends MessageCommand {
   }
 
   private _matchPercentage(answer: string, title: string): boolean {
-    const answerWords = answer
-      .toLowerCase()
-      .split(/[ !~?.,"'’\-_:;()\]{}<>/\\|@#$%^&*+=`]+/)
-      .filter(Boolean);
-    const titleWords = title
-      .toLowerCase()
-      .split(/[ !~?.,"'’\-_:;()\]{}<>/\\|@#$%^&*+=`]+/)
-      .filter(Boolean);
+    const regex =
+      /[\s!~?.,"'’\-_:;()[\]{}<>/\\|@#$%^&*+=×`]+|season\s*\d*|part\s*\d*/;
+    const answerWords = answer.toLowerCase().split(regex).filter(Boolean);
+    const titleWords = title.toLowerCase().split(regex).filter(Boolean);
     const matchCount = titleWords.filter((word) =>
       answerWords.includes(word),
     ).length;
     const threshold = titleWords.length > 3 ? 33 : 80;
-    const percentage = (matchCount / titleWords.length) * 100;
+    const percentage = Math.floor((matchCount / titleWords.length) * 100);
     return percentage >= threshold;
   }
 
