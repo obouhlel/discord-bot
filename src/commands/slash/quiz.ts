@@ -77,7 +77,7 @@ export const quiz = {
       return;
     }
 
-    const content = `# ${capitalize(type)} Quiz\n- Using <@!${user.id}>'s AniList\n- Active in <#${channel.id}>\n- Guess the ${type} title (33% accuracy needed for long titles (over 3 words and 20 characters); season numbers and special characters are optional)\n- Commands: \`!hint\` for a hint, \`!skip\` to skip\n- Duration: **3 minutes**`;
+    const content = `# ${capitalize(type)} Quiz\n- Using <@!${user.id}>'s AniList\n- Active in <#${channel.id}>\n- Guess the ${type} title (33% accuracy needed for long titles (over 3 words and 20 characters); season numbers and special characters are optional)\n- Commands: \`!hint\` for a hint, \`!skip\` to skip\n- Duration: **5 minutes**`;
 
     const embed = new EmbedBuilder()
       .setColor("Random")
@@ -145,7 +145,6 @@ function startQuizCountdown(
   key: string,
   channel: TextChannel,
 ) {
-  const min = 3;
   setTimeout(
     () => {
       notifyOneMinuteLeft(redis, key, channel)
@@ -154,7 +153,7 @@ function startQuizCountdown(
           console.error(error);
         });
     },
-    (min - 1) * 60 * 1000,
+    4 * 60 * 1000,
   );
   setTimeout(
     () => {
@@ -164,7 +163,7 @@ function startQuizCountdown(
           console.error(error);
         });
     },
-    min * 60 * 1000,
+    5 * 60 * 1000,
   );
 }
 
