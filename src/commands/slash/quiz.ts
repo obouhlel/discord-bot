@@ -56,18 +56,6 @@ export const quiz = {
 
     const key = `quiz:${guild.id}:${channel.id}`;
 
-    // Reset Timeout
-    const one = timeouts.get(key + ":one");
-    if (one) {
-      clearTimeout(one);
-      timeouts.delete(key + ":one");
-    }
-    const end = timeouts.get(key + ":end");
-    if (end) {
-      clearTimeout(end);
-      timeouts.delete(key + ":end");
-    }
-
     await interaction.deferReply();
 
     if (await alreadyRunning(redis, key)) {
@@ -87,6 +75,18 @@ export const quiz = {
     if (!data) {
       await interaction.editReply(`${capitalize(type)} not found`);
       return;
+    }
+
+    // Reset Timeout
+    const one = timeouts.get(key + ":one");
+    if (one) {
+      clearTimeout(one);
+      timeouts.delete(key + ":one");
+    }
+    const end = timeouts.get(key + ":end");
+    if (end) {
+      clearTimeout(end);
+      timeouts.delete(key + ":end");
     }
 
     const content = [
