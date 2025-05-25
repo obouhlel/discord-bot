@@ -50,6 +50,9 @@ export class QuizDataBuilder {
     [5, "number" as keyof QuizHint],
   ]);
 
+  private readonly _regex: RegExp =
+    /[\s!~?.,"'’\-_:;()[\]{}<>/\\|@#$%^&*+=×♀`©®™✓•→←↑↓∞≠≈≤≥±÷§¤¢£¥€₩₽₹†‡‰‱※‼⁂⁑⁇⁈⁉₤₧₨₩₪₫₭₮₯₰₱₲₳₴₵₸₺₼₽₾₿₠₡₢₣₤₥₦₧₨₩₪₫₭₮₯₰₱₲₳₴₵₸₺₼₽₾₿←↑→↓↔↕↖↗↘↙↚↛↜↝↞↟↠↡↢↣↤↥↦↧↨↩↪↫↬↭↮↯↰↱↲↳↴↵↶↷↸↹↺↻↼↽↾↿⇀⇁⇂⇃⇄⇅⇆⇇⇈⇉⇊⇋⇌⇍⇎⇏⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙⇚⇛⇜⇝⇞⇟⇠⇡⇢⇣⇤⇥⇦⇧⇨⇩⇪⇫⇬⇭⇮⇯⇰⇱⇲⇳⇴⇵⇶⇷⇸⇹⇺⇻⇼⇽⇾⇿]+|season\s*\d+[a-zA-Z]*|part\s*\d*|oav|ona|movie/;
+
   constructor(data: QuizData | string) {
     if (typeof data === "string") {
       this._data = JSON.parse(data) as QuizData;
@@ -136,14 +139,12 @@ export class QuizDataBuilder {
   }
 
   private _matchPercentage(answer: string, title: string): boolean {
-    const regex =
-      /[\s!~?.,"'’\-_:;()[\]{}<>/\\|@#$%^&*+=×`]+|\d+[a-zA-Z]*\s*season\s*\d+[a-zA-Z]*|part\s*\d*|oav|ona|movie/;
-    const answerWords = answer.toLowerCase().split(regex).filter(Boolean);
-    const titleWords = title.toLowerCase().split(regex).filter(Boolean);
+    const answerWords = answer.toLowerCase().split(this._regex).filter(Boolean);
+    const titleWords = title.toLowerCase().split(this._regex).filter(Boolean);
     const matchCount = titleWords.filter((word) =>
       answerWords.includes(word),
     ).length;
-    const threshold = titleWords.length > 3 ? 33 : 80;
+    const threshold = titleWords.length > 3 && title.length > 20 ? 33 : 100;
     const percentage = Math.floor((matchCount / titleWords.length) * 100);
     return percentage >= threshold;
   }

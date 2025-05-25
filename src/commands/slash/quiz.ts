@@ -1,17 +1,17 @@
 import type { RedisClient } from "bun";
 import type {
   ChatInputCommandInteraction,
-  Guild,
   SlashCommandStringOption,
   TextBasedChannel,
   TextChannel,
+  Guild,
   User,
 } from "discord.js";
 import {
   ApplicationIntegrationType,
-  EmbedBuilder,
   InteractionContextType,
   SlashCommandBuilder,
+  EmbedBuilder,
 } from "discord.js";
 import type { AnilistUser, PrismaClient } from "generated/prisma";
 import JikanService from "services/jikan";
@@ -77,6 +77,8 @@ export const quiz = {
       return;
     }
 
+    const content = `# ${capitalize(type)} Quiz\n- Using <@!${user.id}>'s AniList\n- Active in <#${channel.id}>\n- Guess the ${type} title (33% accuracy needed for long titles (over 3 words and 20 characters); season numbers and special characters are optional)\n- Commands: \`!hint\` for a hint, \`!skip\` to skip\n- Duration: **3 minutes**`;
+
     const embed = new EmbedBuilder()
       .setColor("Random")
       .setTitle(data.getCharater().name)
@@ -85,10 +87,7 @@ export const quiz = {
 
     await redis.set(key, data.toJSON());
 
-    await interaction.editReply({
-      content: `# Quiz ${type}\n- Using <@!${user.id}>'s Anilist.\n- The quiz starts in <#${channel.id}>.\n- Find the ${type} title (33% accuracy needed for long titles).\n- Type \`!hint\` for a clue, or \`!skip\` to skip.\n- You have **5 minutes** to find it.`,
-      embeds: [embed],
-    });
+    await interaction.editReply({ content: content, embeds: [embed] });
 
     startQuizCountdown(redis, key, channel as TextChannel);
   },
