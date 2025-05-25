@@ -149,7 +149,7 @@ function startQuizCountdown(
   const min = 3;
   setTimeout(
     () => {
-      notifyOneMinuteLeft(channel)
+      notifyOneMinuteLeft(redis, key, channel)
         .then()
         .catch((error: unknown) => {
           console.error(error);
@@ -169,7 +169,13 @@ function startQuizCountdown(
   );
 }
 
-async function notifyOneMinuteLeft(channel: TextChannel) {
+async function notifyOneMinuteLeft(
+  redis: RedisClient,
+  key: string,
+  channel: TextChannel,
+) {
+  const value = await redis.get(key);
+  if (!value) return;
   const embed = new EmbedBuilder()
     .setColor("Yellow")
     .setTitle("⚠️ One minute remaining!")
@@ -184,7 +190,7 @@ async function closeQuizSession(
   channel: TextChannel,
 ) {
   const value = await redis.get(key);
-  if (!value) throw new Error("The key is already destroyed");
+  if (!value) return;
 
   const data = new QuizDataBuilder(value);
 
