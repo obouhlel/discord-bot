@@ -1,6 +1,11 @@
 import { EmbedBuilder, TextChannel } from "discord.js";
 import { capitalize } from "utils/capitalize";
 
+export interface QuizTimeout {
+  oneMinuteTimeout: NodeJS.Timeout;
+  endTimeout: NodeJS.Timeout;
+}
+
 export type QuizType = "anime" | "manga";
 
 export type QuizHintType = string | number | string[] | undefined;
@@ -29,6 +34,7 @@ export interface QuizData {
   hint: QuizHint;
   titles: TitleMedia[];
   url: string;
+  timeouts?: QuizTimeout;
 }
 
 export class QuizDataBuilder {
@@ -63,6 +69,10 @@ export class QuizDataBuilder {
 
   public toJSON(): string {
     return JSON.stringify(this._data);
+  }
+
+  public setTimeout(timeouts: QuizTimeout) {
+    this._data.timeouts = timeouts;
   }
 
   public getTitles(): TitleMedia[] {
@@ -155,5 +165,11 @@ export class QuizDataBuilder {
         answer === title.title.toLowerCase() ||
         this._matchPercentage(answer, title.title.toLowerCase()),
     );
+  }
+
+  public clearTimeout() {
+    if (this._data.timeouts) return;
+    clearTimeout(this._data.timeouts!.oneMinuteTimeout);
+    clearTimeout(this._data.timeouts!.endTimeout);
   }
 }

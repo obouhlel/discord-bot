@@ -63,6 +63,7 @@ export default class Quiz extends MessageCommand {
     const res = data.checkTitles(answer);
 
     if (res) {
+      data.clearTimeout();
       const title = data.getTitle();
       const url = data.getUrl();
 

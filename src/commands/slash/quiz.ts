@@ -16,7 +16,12 @@ import {
 import type { AnilistUser, PrismaClient } from "generated/prisma";
 import JikanService from "services/jikan";
 import type CustomDiscordClient from "types/custom-discord-client";
-import { QuizDataBuilder, type QuizData, type QuizType } from "types/quiz";
+import {
+  QuizDataBuilder,
+  type QuizData,
+  type QuizTimeout,
+  type QuizType,
+} from "types/quiz";
 import { capitalize } from "utils/capitalize";
 
 export const quiz = {
@@ -85,11 +90,10 @@ export const quiz = {
       .setDescription(`Role: ${data.getCharater().role}`)
       .setImage(data.getCharater().images);
 
-    await redis.set(key, data.toJSON());
-
     await interaction.editReply({ content: content, embeds: [embed] });
-
-    startQuizCountdown(redis, key, channel as TextChannel);
+    const timeouts = startQuizCountdown(redis, key, channel as TextChannel);
+    data.setTimeout(timeouts);
+    await redis.set(key, data.toJSON());
   },
 };
 
@@ -144,8 +148,9 @@ function startQuizCountdown(
   redis: RedisClient,
   key: string,
   channel: TextChannel,
-) {
-  setTimeout(
+): QuizTimeout {
+  const min = 3;
+  const oneMinuteTimeout = setTimeout(
     () => {
       notifyOneMinuteLeft(redis, key, channel)
         .then()
@@ -153,9 +158,9 @@ function startQuizCountdown(
           console.error(error);
         });
     },
-    4 * 60 * 1000,
+    (min - 1) * 60 * 1000,
   );
-  setTimeout(
+  const endTimeout = setTimeout(
     () => {
       closeQuizSession(redis, key, channel)
         .then()
@@ -163,8 +168,9 @@ function startQuizCountdown(
           console.error(error);
         });
     },
-    5 * 60 * 1000,
+    min * 60 * 1000,
   );
+  return { oneMinuteTimeout, endTimeout };
 }
 
 async function notifyOneMinuteLeft(
