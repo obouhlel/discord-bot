@@ -89,7 +89,23 @@ export const quiz = {
       return;
     }
 
-    const content = `# ${capitalize(type)} Quiz\n- Using <@!${user.id}>'s AniList\n- Active in <#${channel.id}>\n- Guess the ${type} title in English or Japanese\n- **Answer Requirements:**\n\t- Short titles (3 words or less): 100% match\n\t- Long titles (more than 3 words):\n\t\t- Over 20 chars: 10% match\n\t\t- Under 20 chars: 33% match\n- **Commands:**\n\t- \`!hint\` for a hint\n\t- \`!skip\` to skip current quiz\n- Duration: **3 minutes**`;
+    const content = [
+      `# ${capitalize(type)} Quiz`,
+      `- Using <@!${user.id}>'s AniList`,
+      `- Active in <#${channel.id}>`,
+      `- Guess the ${type} title in English or Japanese`,
+      "- **Answer Requirements:**",
+      `  - Don't need to put season or part`,
+      `    - Example: \`Attack on Titan season 3 part 2\` or \`Attack on Titan 2\``,
+      `  - Short titles (3 words or less): 100% match`,
+      "  - Long titles (more than 3 words):",
+      `    - Over 20 chars: 10% match`,
+      `    - Under 20 chars: 33% match`,
+      "- **Commands:**",
+      "  - `!hint` for a hint",
+      "  - `!skip` to skip current quiz",
+      `- Duration: **3 minutes**`,
+    ].join("\n");
 
     const embed = new EmbedBuilder()
       .setColor("Random")

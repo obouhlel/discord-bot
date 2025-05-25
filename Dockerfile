@@ -23,7 +23,6 @@ COPY tsconfig.json .
 
 RUN bun install
 
-COPY ./data ./data
 COPY --from=builder /app .
 
 RUN chown -R bun:bun /home/bun
