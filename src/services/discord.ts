@@ -41,6 +41,7 @@ export default class DiscordService {
 
     this.client.redis = redis;
     this.client.prisma = prisma;
+    this.client.timeouts = new Map();
   }
 
   public async updateCommands() {

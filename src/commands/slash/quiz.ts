@@ -14,14 +14,9 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import type { AnilistUser, PrismaClient } from "generated/prisma";
-import JikanService from "services/jikan";
 import type CustomDiscordClient from "types/custom-discord-client";
-import {
-  QuizDataBuilder,
-  type QuizData,
-  type QuizTimeout,
-  type QuizType,
-} from "types/quiz";
+import JikanService from "services/jikan";
+import { QuizDataBuilder, type QuizData, type QuizType } from "types/quiz";
 import { capitalize } from "utils/capitalize";
 
 export const quiz = {
@@ -48,7 +43,7 @@ export const quiz = {
 
   async execute(interaction: ChatInputCommandInteraction) {
     const client = interaction.client as CustomDiscordClient;
-    const { prisma, redis } = client;
+    const { prisma, redis, timeouts } = client;
     const user: User = interaction.user;
     const guild: Guild | null = interaction.guild;
     const channel: TextBasedChannel | null = interaction.channel;
@@ -91,8 +86,7 @@ export const quiz = {
       .setImage(data.getCharater().images);
 
     await interaction.editReply({ content: content, embeds: [embed] });
-    const timeouts = startQuizCountdown(redis, key, channel as TextChannel);
-    data.setTimeout(timeouts);
+    startQuizCountdown(redis, key, channel as TextChannel, timeouts);
     await redis.set(key, data.toJSON());
   },
 };
@@ -148,11 +142,12 @@ function startQuizCountdown(
   redis: RedisClient,
   key: string,
   channel: TextChannel,
-): QuizTimeout {
+  timeouts: Map<string, NodeJS.Timeout>,
+) {
   const min = 3;
   const oneMinuteTimeout = setTimeout(
     () => {
-      notifyOneMinuteLeft(redis, key, channel)
+      notifyOneMinuteLeft(redis, key, channel, timeouts)
         .then()
         .catch((error: unknown) => {
           console.error(error);
@@ -162,7 +157,7 @@ function startQuizCountdown(
   );
   const endTimeout = setTimeout(
     () => {
-      closeQuizSession(redis, key, channel)
+      closeQuizSession(redis, key, channel, timeouts)
         .then()
         .catch((error: unknown) => {
           console.error(error);
@@ -170,13 +165,15 @@ function startQuizCountdown(
     },
     min * 60 * 1000,
   );
-  return { oneMinuteTimeout, endTimeout };
+  timeouts.set(key + ":one", oneMinuteTimeout);
+  timeouts.set(key + ":end", endTimeout);
 }
 
 async function notifyOneMinuteLeft(
   redis: RedisClient,
   key: string,
   channel: TextChannel,
+  timeouts: Map<string, NodeJS.Timeout>,
 ) {
   const value = await redis.get(key);
   if (!value) return;
@@ -185,6 +182,7 @@ async function notifyOneMinuteLeft(
     .setTitle("⚠️ One minute remaining!")
     .setDescription("Hurry up! Only 60 seconds left to find the answer.");
 
+  timeouts.delete(key + ":one");
   await channel.send({ embeds: [embed] });
 }
 
@@ -192,6 +190,7 @@ async function closeQuizSession(
   redis: RedisClient,
   key: string,
   channel: TextChannel,
+  timeouts: Map<string, NodeJS.Timeout>,
 ) {
   const value = await redis.get(key);
   if (!value) return;
@@ -204,6 +203,7 @@ async function closeQuizSession(
     .setDescription("⏰ Time's up! The quiz has ended.")
     .setURL(data.getUrl());
 
+  timeouts.delete(key + ":end");
   await redis.del(key);
   await channel.send({ embeds: [embed] });
 }

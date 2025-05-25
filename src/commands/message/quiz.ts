@@ -33,7 +33,7 @@ export default class Quiz extends MessageCommand {
   }
 
   async execute({ client, message }: MessageCommandContext): Promise<void> {
-    const { redis } = client;
+    const { redis, timeouts } = client;
     const guild = message.guild!;
     const user = message.author;
     const channel = message.channel as TextChannel;
@@ -63,7 +63,7 @@ export default class Quiz extends MessageCommand {
     const res = data.checkTitles(answer);
 
     if (res) {
-      data.clearTimeout();
+      await data.clear(key, redis, timeouts);
       const title = data.getTitle();
       const url = data.getUrl();
 
@@ -74,7 +74,6 @@ export default class Quiz extends MessageCommand {
         .setURL(url);
 
       await channel.send({ embeds: [embed] });
-      await redis.del(key);
     }
   }
 

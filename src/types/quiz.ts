@@ -1,10 +1,6 @@
+import type { RedisClient } from "bun";
 import { EmbedBuilder, TextChannel } from "discord.js";
 import { capitalize } from "utils/capitalize";
-
-export interface QuizTimeout {
-  oneMinuteTimeout: NodeJS.Timeout;
-  endTimeout: NodeJS.Timeout;
-}
 
 export type QuizType = "anime" | "manga";
 
@@ -34,7 +30,6 @@ export interface QuizData {
   hint: QuizHint;
   titles: TitleMedia[];
   url: string;
-  timeouts?: QuizTimeout;
 }
 
 export class QuizDataBuilder {
@@ -69,10 +64,6 @@ export class QuizDataBuilder {
 
   public toJSON(): string {
     return JSON.stringify(this._data);
-  }
-
-  public setTimeout(timeouts: QuizTimeout) {
-    this._data.timeouts = timeouts;
   }
 
   public getTitles(): TitleMedia[] {
@@ -167,9 +158,23 @@ export class QuizDataBuilder {
     );
   }
 
-  public clearTimeout() {
-    if (this._data.timeouts) return;
-    clearTimeout(this._data.timeouts!.oneMinuteTimeout);
-    clearTimeout(this._data.timeouts!.endTimeout);
+  public async clear(
+    key: string,
+    redis: RedisClient,
+    timeouts: Map<string, NodeJS.Timeout>,
+  ): Promise<void> {
+    const timeoutOne = timeouts.get(key + ":one");
+    console.log(timeoutOne);
+    if (timeoutOne) {
+      clearTimeout(timeoutOne);
+      timeouts.delete(key + ":one");
+    }
+    const timeoutEnd = timeouts.get(key + ":end");
+    console.log(timeoutEnd);
+    if (timeoutEnd) {
+      clearTimeout(timeoutEnd);
+      timeouts.delete(key + ":end");
+    }
+    await redis.del(key);
   }
 }
