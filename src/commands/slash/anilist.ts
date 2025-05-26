@@ -47,11 +47,11 @@ export const anilist = {
     }
 
     const anilistData = data.data.User;
-    const animeId = await anilistService.getAnimesId(
+    const animeId = await anilistService.getAnimeIds(
       anilistData.id,
       anilistData.name,
     );
-    const mangaId = await anilistService.getMangasId(
+    const mangaId = await anilistService.getMangaIds(
       anilistData.id,
       anilistData.name,
     );

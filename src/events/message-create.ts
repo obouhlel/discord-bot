@@ -1,6 +1,6 @@
 import type CustomDiscordClient from "types/custom-discord-client";
 import type { Message } from "discord.js";
-import type { MessageCommand } from "types/message-command";
+import type { MessageCommand } from "types/commands/message";
 
 export async function messageCreate(
   message: Message,

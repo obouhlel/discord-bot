@@ -1,4 +1,4 @@
-import type { MessageCommand } from "types/message-command";
+import type { MessageCommand } from "types/commands/message";
 import PingCommand from "commands/message/ping";
 import Quiz from "commands/message/quiz";
 

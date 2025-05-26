@@ -1,6 +1,6 @@
-import type { TitleMedia } from "./quiz";
+import type { TitleMedia } from "../title";
 
-export interface AnimeResponse {
+export interface MangaResponse {
   data: {
     mal_id: number;
     url: string;
@@ -16,19 +16,14 @@ export interface AnimeResponse {
         large_image_url: string;
       };
     };
-    trailer: {
-      youtube_id: string;
-      url: string;
-      embed_url: string;
-    };
     approved: boolean;
     titles: TitleMedia[];
-    type: string;
-    source: string;
-    episodes: number;
-    status: string;
-    airing: boolean;
-    aired: {
+    type: "Manga";
+    chapters: number;
+    volumes: number;
+    status: "Finished";
+    publishing: boolean;
+    published: {
       from: string;
       to: string;
       prop: {
@@ -45,8 +40,6 @@ export interface AnimeResponse {
         string: string;
       };
     };
-    duration: string;
-    rating: string;
     score: number;
     scored_by: number;
     rank: number;
@@ -55,27 +48,13 @@ export interface AnimeResponse {
     favorites: number;
     synopsis: string;
     background: string;
-    season: string;
-    year: number;
-    broadcast: {
-      day: string;
-      time: string;
-      timezone: string;
-      string: string;
-    };
-    producers: {
+    authors: {
       mal_id: number;
       type: string;
       name: string;
       url: string;
     }[];
-    licensors: {
-      mal_id: number;
-      type: string;
-      name: string;
-      url: string;
-    }[];
-    studios: {
+    serializations: {
       mal_id: number;
       type: string;
       name: string;
@@ -102,27 +81,6 @@ export interface AnimeResponse {
     demographics: {
       mal_id: number;
       type: string;
-      name: string;
-      url: string;
-    }[];
-    relations: {
-      relation: string;
-      entry: {
-        mal_id: number;
-        type: string;
-        name: string;
-        url: string;
-      }[];
-    }[];
-    theme: {
-      openings: string[];
-      endings: string[];
-    };
-    external: {
-      name: string;
-      url: string;
-    }[];
-    streaming: {
       name: string;
       url: string;
     }[];

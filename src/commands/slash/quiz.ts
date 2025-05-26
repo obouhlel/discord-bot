@@ -1,4 +1,3 @@
-import type { RedisClient } from "bun";
 import type {
   ChatInputCommandInteraction,
   SlashCommandStringOption,
@@ -13,11 +12,11 @@ import {
   SlashCommandBuilder,
   EmbedBuilder,
 } from "discord.js";
-import type { AnilistUser, PrismaClient } from "generated/prisma";
 import type CustomDiscordClient from "types/custom-discord-client";
-import JikanService from "services/jikan";
-import { QuizDataBuilder, type QuizData, type QuizType } from "types/quiz";
+import type { QuizType } from "types/quiz";
 import { capitalize } from "utils/capitalize";
+import { getAnilistUser } from "utils/database/get-anilist-user";
+import { buildQuizDataManager } from "utils/builders/quiz";
 
 export const quiz = {
   data: new SlashCommandBuilder()
@@ -58,10 +57,16 @@ export const quiz = {
 
     await interaction.deferReply();
 
-    if (await alreadyRunning(redis, key)) {
+    const keys = await redis.keys(key);
+    if (keys.length >= 1) {
       await interaction.editReply(
         `A quiz is already running in <#${channel.id}>`,
       );
+      if (keys.length > 1) {
+        for (const key of keys) {
+          await redis.del(key);
+        }
+      }
       return;
     }
 
@@ -71,22 +76,20 @@ export const quiz = {
       return;
     }
 
-    const data = await getQuizData(anilistUser, type);
+    const malIds = type === "anime" ? anilistUser.animeId : anilistUser.mangaId;
+    const index = Math.floor(Math.random() * (malIds.length - 1));
+    const malId = malIds[index]!;
+
+    const data = await buildQuizDataManager(
+      malId,
+      type,
+      redis,
+      timeouts,
+      channel as TextChannel,
+    );
     if (!data) {
       await interaction.editReply(`${capitalize(type)} not found`);
       return;
-    }
-
-    // Reset Timeout
-    const one = timeouts.get(key + ":one");
-    if (one) {
-      clearTimeout(one);
-      timeouts.delete(key + ":one");
-    }
-    const end = timeouts.get(key + ":end");
-    if (end) {
-      clearTimeout(end);
-      timeouts.delete(key + ":end");
     }
 
     const content = [
@@ -109,128 +112,9 @@ export const quiz = {
 
     const embed = new EmbedBuilder()
       .setColor("Random")
-      .setTitle(data.getCharater().name)
       .setImage(data.getCharater().image);
 
     await interaction.editReply({ content: content, embeds: [embed] });
-    startQuizCountdown(redis, key, channel as TextChannel, timeouts);
-    await redis.set(key, data.toJSON());
+    await data.start(key);
   },
 };
-
-async function alreadyRunning(
-  redis: RedisClient,
-  key: string,
-): Promise<boolean> {
-  const keys = await redis.keys(key);
-
-  if (keys.length === 1) {
-    return true;
-  }
-  return false;
-}
-
-async function getAnilistUser(
-  prisma: PrismaClient,
-  user: User,
-): Promise<AnilistUser | null> {
-  const dbUser = await prisma.user.findUnique({
-    where: {
-      discordId: user.id,
-    },
-  });
-
-  if (!dbUser || !dbUser.anilistUserId) return null;
-
-  const anilistUser = await prisma.anilistUser.findUnique({
-    where: {
-      id: dbUser.anilistUserId,
-    },
-  });
-
-  return anilistUser;
-}
-
-async function getQuizData(
-  anilistUser: AnilistUser,
-  type: QuizType,
-): Promise<QuizDataBuilder | null> {
-  const malIds = type === "anime" ? anilistUser.animeId : anilistUser.mangaId;
-  const index = Math.floor(Math.random() * (malIds.length - 1));
-  const malId = malIds[index]!;
-  const jikanService = new JikanService();
-
-  const data: QuizData | null = await jikanService.getQuizData(malId, type);
-  if (!data) return null;
-  return new QuizDataBuilder(data);
-}
-
-function startQuizCountdown(
-  redis: RedisClient,
-  key: string,
-  channel: TextChannel,
-  timeouts: Map<string, NodeJS.Timeout>,
-) {
-  const min = 3;
-  const oneMinuteTimeout = setTimeout(
-    () => {
-      notifyOneMinuteLeft(redis, key, channel, timeouts)
-        .then()
-        .catch((error: unknown) => {
-          console.error(error);
-        });
-    },
-    (min - 1) * 60 * 1000,
-  );
-  const endTimeout = setTimeout(
-    () => {
-      closeQuizSession(redis, key, channel, timeouts)
-        .then()
-        .catch((error: unknown) => {
-          console.error(error);
-        });
-    },
-    min * 60 * 1000,
-  );
-  timeouts.set(key + ":one", oneMinuteTimeout);
-  timeouts.set(key + ":end", endTimeout);
-}
-
-async function notifyOneMinuteLeft(
-  redis: RedisClient,
-  key: string,
-  channel: TextChannel,
-  timeouts: Map<string, NodeJS.Timeout>,
-) {
-  const value = await redis.get(key);
-  if (!value) return;
-  const embed = new EmbedBuilder()
-    .setColor("Yellow")
-    .setTitle("⚠️ One minute remaining!")
-    .setDescription("Hurry up! Only 60 seconds left to find the answer.");
-
-  timeouts.delete(key + ":one");
-  await channel.send({ embeds: [embed] });
-}
-
-async function closeQuizSession(
-  redis: RedisClient,
-  key: string,
-  channel: TextChannel,
-  timeouts: Map<string, NodeJS.Timeout>,
-) {
-  const value = await redis.get(key);
-  if (!value) return;
-
-  const data = new QuizDataBuilder(value);
-
-  const embed = new EmbedBuilder()
-    .setColor("White")
-    .setTitle(data.getTitle())
-    .setDescription("⏰ Time's up! The quiz has ended.")
-    .setURL(data.getUrl());
-
-  timeouts.delete(key + ":end");
-  await redis.del(key);
-  await channel.send({ embeds: [embed] });
-}

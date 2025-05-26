@@ -1,6 +1,6 @@
 import type { TextChannel } from "discord.js";
-import type { MessageCommandContext } from "types/message-command";
-import { MessageCommand } from "types/message-command";
+import type { MessageCommandContext } from "types/commands/message";
+import { MessageCommand } from "types/commands/message";
 
 export default class PingCommand extends MessageCommand {
   public readonly data = {
