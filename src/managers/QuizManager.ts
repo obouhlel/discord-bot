@@ -35,12 +35,12 @@ export class QuizManager {
     [4, "characters" as keyof QuizHint],
   ]);
 
-  private readonly _hintHandler = {
-    cover: (key: string, value: string) => this._handlerCover(key, value),
-    synopsis: (key: string, value: string) => this._handlerSynopsis(key, value),
-    genres: (key: string, value: string[]) => this._handlerGenres(key, value),
+  private readonly _hintDisplayManager = {
+    cover: (key: string, value: string) => this._displayCover(key, value),
+    synopsis: (key: string, value: string) => this._displaySynopsis(key, value),
+    genres: (key: string, value: string[]) => this._displayGenres(key, value),
     characters: (key: string, value: QuizCharacters[], redisKey: string) =>
-      this._handlerCharacter(key, value as QuizCharacters[], redisKey),
+      this._displayCharacter(key, value as QuizCharacters[], redisKey),
   };
 
   private readonly _regex: RegExp =
@@ -107,20 +107,21 @@ export class QuizManager {
 
   // HINT DISPLAY
 
-  private async _handlerCover(key: string, value: string) {
+  private async _displayCover(key: string, value: string) {
     const embed = new EmbedBuilder()
-      .setImage(value as string)
+      .setTitle(capitalize(key))
+      .setImage(value)
       .setColor("Random");
     await this._channel.send({ embeds: [embed] });
   }
 
-  private async _handlerGenres(key: string, value: string[]) {
+  private async _displayGenres(key: string, value: string[]) {
     await this._channel.send(
-      `**Genres:**\n${value.map((genre) => `- ${genre}\n`).join("")}`,
+      `**${capitalize(key)}:**\n${value.map((genre) => `- ${genre}\n`).join("")}`,
     );
   }
 
-  private async _handlerCharacter(
+  private async _displayCharacter(
     key: string,
     value: QuizCharacters[],
     redisKey: string,
@@ -138,11 +139,14 @@ export class QuizManager {
     this._data.hint.characters = this._data.hint.characters.filter(
       (c) => character.id != c.id,
     );
-    await this._channel.send({ embeds: [embed] });
+    await this._channel.send({
+      content: `# ${capitalize(key)}`,
+      embeds: [embed],
+    });
     await this._redis.set(redisKey, this.toJSON());
   }
 
-  private async _handlerSynopsis(key: string, value: string) {
+  private async _displaySynopsis(key: string, value: string) {
     await this._channel.send(
       `# ${capitalize(key.toString())}\n>>> ${value.toString()}`,
     );
@@ -154,11 +158,15 @@ export class QuizManager {
     redisKey: string,
   ) {
     if (key === "characters") {
-      await this._hintHandler[key](key, value as QuizCharacters[], redisKey);
+      await this._hintDisplayManager[key](
+        key,
+        value as QuizCharacters[],
+        redisKey,
+      );
     } else if (key === "genres") {
-      await this._hintHandler[key](key, value as string[]);
+      await this._hintDisplayManager[key](key, value as string[]);
     } else {
-      await this._hintHandler[key](key, value as string);
+      await this._hintDisplayManager[key](key, value as string);
     }
   }
 
@@ -246,7 +254,11 @@ export class QuizManager {
         return;
       }
       await this._sendHint(param as keyof QuizHint, hint, redisKey);
-    } else if (param && /^[1-4]$/.test(param)) {
+    } else if (
+      param &&
+      /^\d+$/.test(param) &&
+      Number(param) <= this._hintParams.size
+    ) {
       const result = this._getHintValueById(Number(param));
       if (!result) return;
       const [key, value] = result;
@@ -279,8 +291,6 @@ export class QuizManager {
           .map((t) => `- ${t.title}`)
           .join("\n")}`,
       );
-    } else {
-      await user.send(`# NOOBU !\nWhy are you trying to cheat? Do \`!skip\``);
     }
   }
 

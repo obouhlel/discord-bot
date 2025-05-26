@@ -107,11 +107,12 @@ export const quiz = {
       "- **Commands:**",
       "  - `!hint` for a hint",
       "  - `!skip` to skip current quiz",
-      `- Duration: **3 minutes**`,
+      `- Duration: **1 minutes**`,
     ].join("\n");
 
     const embed = new EmbedBuilder()
       .setColor("Random")
+      .setTitle(data.getCharater().name)
       .setImage(data.getCharater().image);
 
     await interaction.editReply({ content: content, embeds: [embed] });
