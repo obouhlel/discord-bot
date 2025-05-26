@@ -1,6 +1,6 @@
 import type { MessageCommandContext } from "types/commands/message";
 import type { TextChannel } from "discord.js";
-import { QuizDataManager } from "managers/QuizDataManager";
+import { QuizManager } from "managers/QuizManager";
 import { EmbedBuilder } from "discord.js";
 import { MessageCommand } from "types/commands/message";
 
@@ -38,7 +38,7 @@ export default class Quiz extends MessageCommand {
     const value = await redis.get(key);
     if (!value) return;
 
-    const quiz = new QuizDataManager(value, redis, timeouts, channel);
+    const quiz = new QuizManager(value, redis, timeouts, channel);
     const answer = message.content.toLowerCase();
 
     if (answer.startsWith("!hint")) {

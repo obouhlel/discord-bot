@@ -8,7 +8,7 @@ import type {
   Character,
   CharacterResponse,
 } from "types/responses/jikan/characters";
-import { QuizDataManager } from "managers/QuizDataManager";
+import { QuizManager } from "managers/QuizManager";
 
 const API_URL = "https://api.jikan.moe/v4";
 
@@ -71,7 +71,7 @@ export async function buildQuizDataManager(
   redis: RedisClient,
   timeouts: Map<string, NodeJS.Timeout>,
   channel: TextChannel,
-): Promise<QuizDataManager | null> {
+): Promise<QuizManager | null> {
   const mediaData = await fetchMediaData(id, type);
   if (!mediaData) return null;
 
@@ -101,5 +101,5 @@ export async function buildQuizDataManager(
     type,
   };
 
-  return new QuizDataManager(data, redis, timeouts, channel);
+  return new QuizManager(data, redis, timeouts, channel);
 }
