@@ -268,14 +268,13 @@ export class QuizManager {
       await this._hintHandler(key, value);
       await this._updateData(quizId);
     } else {
-      let content = "";
       if (this._data.score === 1) {
-        content = "# You can't use more hint !";
+        await this._channel.send("You can't use more hint, use `!skip`.");
+      } else {
+        await this._channel.send({
+          embeds: [this._getHintInfo()],
+        });
       }
-      await this._channel.send({
-        content: content,
-        embeds: [this._getHintInfo()],
-      });
     }
   }
 

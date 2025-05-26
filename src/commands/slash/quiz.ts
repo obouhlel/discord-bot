@@ -34,10 +34,7 @@ export const quiz = {
           { name: "Manga", value: "manga" },
         ),
     )
-    .setIntegrationTypes([
-      ApplicationIntegrationType.GuildInstall,
-      ApplicationIntegrationType.UserInstall,
-    ])
+    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
     .setContexts([InteractionContextType.Guild]),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -49,7 +46,7 @@ export const quiz = {
     const type = interaction.options.getString("type", true) as QuizType;
 
     if (!channel || !guild) {
-      await interaction.reply("Please use the quiz command in a valid channel");
+      await interaction.reply("You are not in a server");
       return;
     }
 

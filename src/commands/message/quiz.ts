@@ -1,5 +1,6 @@
 import type { MessageCommandContext } from "types/commands/message";
-import type { TextChannel } from "discord.js";
+import type { Guild, TextChannel, User } from "discord.js";
+import type { PrismaClient } from "generated/prisma";
 import { QuizManager } from "managers/QuizManager";
 import { EmbedBuilder } from "discord.js";
 import { MessageCommand } from "types/commands/message";
@@ -29,7 +30,7 @@ export default class Quiz extends MessageCommand {
   }
 
   async execute({ client, message }: MessageCommandContext): Promise<void> {
-    const { redis, timeouts } = client;
+    const { prisma, redis, timeouts } = client;
     const guild = message.guild!;
     const user = message.author;
     const channel = message.channel as TextChannel;
@@ -60,18 +61,72 @@ export default class Quiz extends MessageCommand {
 
     if (res) {
       await quiz.clear(key);
-      const title = quiz.getTitle();
-      const url = quiz.getUrl();
+      try {
+        await updateScore(prisma, quiz.getScore(), user, guild);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        const embed = new EmbedBuilder()
+          .setColor("Green")
+          .setTitle(quiz.getTitle())
+          .setDescription(
+            `Success! <@${user.id}> +${quiz.getScore().toString()} point!`,
+          )
+          .setURL(quiz.getUrl());
 
-      const embed = new EmbedBuilder()
-        .setColor("Green")
-        .setTitle(title)
-        .setDescription(
-          `Success! <@${user.id}> +${quiz.getScore().toString()} point!`,
-        )
-        .setURL(url);
-
-      await channel.send({ embeds: [embed] });
+        await channel.send({ embeds: [embed] });
+      }
     }
   }
+}
+
+async function updateScore(
+  prisma: PrismaClient,
+  score: number,
+  user: User,
+  guild: Guild,
+) {
+  await prisma.user.upsert({
+    where: {
+      discordId: user.id,
+    },
+    update: {
+      name: user.globalName!,
+      username: user.username,
+      avatarId: user.avatar!,
+      scores: {
+        upsert: {
+          where: {
+            discordId_guildId: {
+              discordId: user.id,
+              guildId: guild.id,
+            },
+          },
+          create: {
+            discordId: user.id,
+            guildId: guild.id,
+            scores: score,
+          },
+          update: {
+            scores: {
+              increment: score,
+            },
+          },
+        },
+      },
+    },
+    create: {
+      discordId: user.id,
+      name: user.globalName!,
+      username: user.username,
+      avatarId: user.avatar!,
+      scores: {
+        create: {
+          discordId: user.id,
+          guildId: guild.id,
+          scores: score,
+        },
+      },
+    },
+  });
 }
