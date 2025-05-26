@@ -95,16 +95,17 @@ export const quiz = {
       `- Active in <#${channel.id}>`,
       `- Guess the ${type} title`,
       "- **Answer Requirements:**",
-      `  - Don't need to put season or part`,
+      `  - No need to include season or part`,
       `    - Example: \`Attack on Titan season 3 part 2\` or \`Attack on Titan 2\``,
       `  - Short titles (3 words or less): 100% match`,
       "  - Long titles (more than 3 words):",
-      `    - Over 30 chars: 20% words match`,
-      `    - Under 30 chars: 33% words match`,
+      `    - Over 30 chars: 20% word match`,
+      `    - Under 30 chars: 33% word match`,
       "- **Commands:**",
       "  - `!hint` for a hint",
       "  - `!skip` to skip current quiz",
-      `- Duration: **1 minutes**`,
+      "- You start with 5 points, and some hints will consume points",
+      `- Duration: **1 minute**`,
     ].join("\n");
 
     const embed = new EmbedBuilder()
