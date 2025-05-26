@@ -1,4 +1,5 @@
 import type { TitleMedia } from "types/responses/title";
+// import type { PrismaClient } from "generated/prisma";
 import type { TextChannel, User } from "discord.js";
 import type { RedisClient } from "bun";
 import type {
@@ -16,16 +17,17 @@ export class QuizManager {
   private _redis: RedisClient;
   private _timeouts: Map<string, NodeJS.Timeout>;
   private _channel: TextChannel;
+  // private _prisma: PrismaClient;
 
   private _cheater = new Set(["831543267194568744"]);
 
   private _min = 1;
 
   private readonly _hintParams = new Map([
-    ["cover", "The cover of the anime/manga"],
-    ["synopsis", "The plot summary of the anime/manga"],
-    ["genres", "The genres of the anime/manga"],
-    ["characters", "An other character of anime/manga"],
+    ["cover", "The cover of the anime/manga (-4)"],
+    ["synopsis", "The plot summary of the anime/manga (-4)"],
+    ["genres", "The genres of the anime/manga (-1)"],
+    ["characters", "An other character of anime/manga (-1)"],
   ]);
 
   private readonly _hintNumberParams = new Map([
@@ -35,12 +37,12 @@ export class QuizManager {
     [4, "characters" as keyof QuizHint],
   ]);
 
-  private readonly _hintDisplayManager = {
-    cover: (key: string, value: string) => this._displayCover(key, value),
-    synopsis: (key: string, value: string) => this._displaySynopsis(key, value),
-    genres: (key: string, value: string[]) => this._displayGenres(key, value),
-    characters: (key: string, value: QuizCharacters[], redisKey: string) =>
-      this._displayCharacter(key, value as QuizCharacters[], redisKey),
+  private readonly _hintMapHandler = {
+    cover: (key: string, value: string) => this._handlerCover(key, value),
+    synopsis: (key: string, value: string) => this._handlerSynopsis(key, value),
+    genres: (key: string, value: string[]) => this._handlerGenres(key, value),
+    characters: (key: string, value: QuizCharacters[]) =>
+      this._handlerCharacter(key, value as QuizCharacters[]),
   };
 
   private readonly _regex: RegExp =
@@ -91,6 +93,10 @@ export class QuizManager {
     return this._data.hint;
   }
 
+  public getScore(): number {
+    return this._data.score;
+  }
+
   // PRIVATE
 
   private _getHintValue(hint: keyof QuizHint): QuizHintType {
@@ -107,25 +113,23 @@ export class QuizManager {
 
   // HINT DISPLAY
 
-  private async _displayCover(key: string, value: string) {
+  private async _handlerCover(key: string, value: string) {
     const embed = new EmbedBuilder()
       .setTitle(capitalize(key))
       .setImage(value)
       .setColor("Random");
     await this._channel.send({ embeds: [embed] });
+    this._data.score -= 4;
   }
 
-  private async _displayGenres(key: string, value: string[]) {
+  private async _handlerGenres(key: string, value: string[]) {
     await this._channel.send(
       `**${capitalize(key)}:**\n${value.map((genre) => `- ${genre}\n`).join("")}`,
     );
+    this._data.score -= 1;
   }
 
-  private async _displayCharacter(
-    key: string,
-    value: QuizCharacters[],
-    redisKey: string,
-  ) {
+  private async _handlerCharacter(key: string, value: QuizCharacters[]) {
     if (value.length === 0) {
       await this._channel.send("All characters have been sent");
       return;
@@ -143,30 +147,23 @@ export class QuizManager {
       content: `# ${capitalize(key)}`,
       embeds: [embed],
     });
-    await this._redis.set(redisKey, this.toJSON());
+    this._data.score -= 1;
   }
 
-  private async _displaySynopsis(key: string, value: string) {
+  private async _handlerSynopsis(key: string, value: string) {
     await this._channel.send(
       `# ${capitalize(key.toString())}\n>>> ${value.toString()}`,
     );
+    this._data.score -= 4;
   }
 
-  private async _sendHint(
-    key: keyof QuizHint,
-    value: QuizHintType,
-    redisKey: string,
-  ) {
+  private async _hintHandler(key: keyof QuizHint, value: QuizHintType) {
     if (key === "characters") {
-      await this._hintDisplayManager[key](
-        key,
-        value as QuizCharacters[],
-        redisKey,
-      );
+      await this._hintMapHandler[key](key, value as QuizCharacters[]);
     } else if (key === "genres") {
-      await this._hintDisplayManager[key](key, value as string[]);
+      await this._hintMapHandler[key](key, value as string[]);
     } else {
-      await this._hintDisplayManager[key](key, value as string);
+      await this._hintMapHandler[key](key, value as string);
     }
   }
 
@@ -199,6 +196,10 @@ export class QuizManager {
     const threshold = title.length > 30 ? 20 : 33;
     const percentage = Math.floor((matchCount / titleWords.length) * 100);
     return percentage >= threshold;
+  }
+
+  private async _updateData(key: string) {
+    await this._redis.set(key, this.toJSON());
   }
 
   // PUBLIC
@@ -245,26 +246,36 @@ export class QuizManager {
   }
 
   // commands hint
-  public async hint(answer: string, redisKey: string) {
+  public async hint(answer: string, quizId: string) {
     const [, param] = answer.split(" ");
-    if (param && param in this.getHints()) {
+    if (param && param in this.getHints() && this._data.score > 1) {
       const hint = this._getHintValue(param as keyof QuizHint);
       if (!hint) {
         await this._channel.send(`The \`${param}\` not found in database`);
         return;
       }
-      await this._sendHint(param as keyof QuizHint, hint, redisKey);
+      await this._hintHandler(param as keyof QuizHint, hint);
+      await this._updateData(quizId);
     } else if (
       param &&
       /^\d+$/.test(param) &&
-      Number(param) <= this._hintParams.size
+      Number(param) <= this._hintParams.size &&
+      this._data.score > 1
     ) {
       const result = this._getHintValueById(Number(param));
       if (!result) return;
       const [key, value] = result;
-      await this._sendHint(key, value, redisKey);
+      await this._hintHandler(key, value);
+      await this._updateData(quizId);
     } else {
-      await this._channel.send({ embeds: [this._getHintInfo()] });
+      let content = "";
+      if (this._data.score === 1) {
+        content = "# You can't use more hint !";
+      }
+      await this._channel.send({
+        content: content,
+        embeds: [this._getHintInfo()],
+      });
     }
   }
 

@@ -99,6 +99,7 @@ export async function buildQuizDataManager(
     titles: mediaInfo.titles,
     url: mediaInfo.url,
     type,
+    score: 5,
   };
 
   return new QuizManager(data, redis, timeouts, channel);

@@ -29,4 +29,5 @@ export interface QuizData {
   titles: TitleMedia[];
   url: string;
   type: QuizType;
+  score: number;
 }

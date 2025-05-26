@@ -66,7 +66,9 @@ export default class Quiz extends MessageCommand {
       const embed = new EmbedBuilder()
         .setColor("Green")
         .setTitle(title)
-        .setDescription(`Success! <@${user.id}> +5 point!`)
+        .setDescription(
+          `Success! <@${user.id}> +${quiz.getScore().toString()} point!`,
+        )
         .setURL(url);
 
       await channel.send({ embeds: [embed] });
