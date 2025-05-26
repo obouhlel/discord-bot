@@ -1,4 +1,4 @@
-import type CustomDiscordClient from "./custom-discord-client";
+import type CustomDiscordClient from "../custom-discord-client";
 import type { Message } from "discord.js";
 
 export interface MessageCommandContext {

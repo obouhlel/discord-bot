@@ -1,10 +1,9 @@
-import type { MessageCommandContext } from "types/message-command";
-import type { QuizHint } from "types/quiz";
-import type { RedisClient } from "bun";
-import type { TextChannel } from "discord.js";
-import { QuizDataBuilder } from "types/quiz";
-import { EmbedBuilder, User } from "discord.js";
-import { MessageCommand } from "types/message-command";
+import type { MessageCommandContext } from "types/commands/message";
+import type { Guild, TextChannel, User } from "discord.js";
+import type { PrismaClient } from "generated/prisma";
+import { QuizManager } from "managers/QuizManager";
+import { EmbedBuilder } from "discord.js";
+import { MessageCommand } from "types/commands/message";
 
 export default class Quiz extends MessageCommand {
   public readonly data = {
@@ -12,8 +11,6 @@ export default class Quiz extends MessageCommand {
     description:
       "You need to register with /anilist first. After that, use /quiz to start playing.",
   };
-
-  private _cheater = new Set(["831543267194568744"]);
 
   async shouldExecute({
     client,
@@ -33,7 +30,7 @@ export default class Quiz extends MessageCommand {
   }
 
   async execute({ client, message }: MessageCommandContext): Promise<void> {
-    const { redis, timeouts } = client;
+    const { prisma, redis, timeouts } = client;
     const guild = message.guild!;
     const user = message.author;
     const channel = message.channel as TextChannel;
@@ -42,96 +39,94 @@ export default class Quiz extends MessageCommand {
     const value = await redis.get(key);
     if (!value) return;
 
-    const data = new QuizDataBuilder(value);
+    const quiz = new QuizManager(value, redis, timeouts, channel);
     const answer = message.content.toLowerCase();
 
     if (answer.startsWith("!hint")) {
-      await this._hint(answer, channel, data);
-      const dataRaw = data.toJSON();
-      await redis.set(key, dataRaw);
+      await quiz.hint(answer, key);
       return;
     }
 
     if (answer === "!skip") {
-      await this._skip(data, key, redis, channel);
+      await quiz.skip(key);
       return;
     }
 
     if (answer === "!cheat") {
-      await this._cheat(user, data);
+      await quiz.cheat(user);
       return;
     }
 
-    const res = data.checkTitles(answer);
+    const res = quiz.checkTitles(answer);
 
     if (res) {
-      await data.clear(key, redis, timeouts);
-      const title = data.getTitle();
-      const url = data.getUrl();
+      await quiz.clear(key);
+      try {
+        await updateScore(prisma, quiz.getScore(), user, guild);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        const embed = new EmbedBuilder()
+          .setColor("Green")
+          .setTitle(quiz.getTitle())
+          .setDescription(
+            `Success! <@${user.id}> +${quiz.getScore().toString()} point!`,
+          )
+          .setURL(quiz.getUrl());
 
-      const embed = new EmbedBuilder()
-        .setColor("Green")
-        .setTitle(title)
-        .setDescription(`Success! <@${user.id}> +1 point!`)
-        .setURL(url);
-
-      await channel.send({ embeds: [embed] });
-    }
-  }
-
-  private async _hint(
-    answer: string,
-    channel: TextChannel,
-    data: QuizDataBuilder,
-  ) {
-    const [, param] = answer.split(" ");
-    if (param && param in data.getHints()) {
-      const hint = data.getHint(param as keyof QuizHint);
-      if (!hint) {
-        await channel.send(`The \`${param}\` not found in database`);
-        return;
+        await channel.send({ embeds: [embed] });
       }
-      await data.sendHint(channel, param as keyof QuizHint, hint);
-    } else if (param && /^[1-6]$/.test(param)) {
-      const result = data.getHintByNumber(Number(param));
-      if (!result) return;
-      const [key, value] = result;
-      await data.sendHint(channel, key, value);
-    } else {
-      const embed = data.getHintInfo();
-      await channel.send({ embeds: [embed] });
     }
   }
+}
 
-  private async _cheat(user: User, data: QuizDataBuilder) {
-    if (this._cheater.has(user.id)) {
-      await user.send(
-        `Cheat: The answers are:\n${data
-          .getTitles()
-          .map((t) => `- ${t.title}`)
-          .join("\n")}`,
-      );
-    } else {
-      await user.send(`# NOOBU !\nWhy are you trying to cheat? Do \`!skip\``);
-    }
-  }
-
-  private async _skip(
-    data: QuizDataBuilder,
-    key: string,
-    redis: RedisClient,
-    channel: TextChannel,
-  ) {
-    const title = data.getTitle();
-    const url = data.getUrl();
-
-    const embed = new EmbedBuilder()
-      .setColor("Red")
-      .setTitle(title)
-      .setDescription(`You gave up on this character.`)
-      .setURL(url);
-
-    await channel.send({ embeds: [embed] });
-    await redis.del(key);
-  }
+async function updateScore(
+  prisma: PrismaClient,
+  score: number,
+  user: User,
+  guild: Guild,
+) {
+  await prisma.user.upsert({
+    where: {
+      discordId: user.id,
+    },
+    update: {
+      name: user.globalName!,
+      username: user.username,
+      avatarId: user.avatar!,
+      scores: {
+        upsert: {
+          where: {
+            discordId_guildId: {
+              discordId: user.id,
+              guildId: guild.id,
+            },
+          },
+          create: {
+            discordId: user.id,
+            guildId: guild.id,
+            scores: score,
+          },
+          update: {
+            scores: {
+              increment: score,
+            },
+          },
+        },
+      },
+    },
+    create: {
+      discordId: user.id,
+      name: user.globalName!,
+      username: user.username,
+      avatarId: user.avatar!,
+      scores: {
+        create: {
+          discordId: user.id,
+          guildId: guild.id,
+          scores: score,
+        },
+      },
+    },
+  });
 }

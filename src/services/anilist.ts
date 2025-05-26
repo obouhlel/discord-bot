@@ -1,47 +1,10 @@
 import axios, { AxiosError } from "axios";
-
-interface UserAnilistRaw {
-  data: {
-    User: {
-      id: number;
-      name: string;
-      siteUrl: string;
-    };
-  };
-}
-
-interface OptionQueryAnilist {
-  headers: {
-    "Content-Type": string;
-    Accept: string;
-  };
-}
-
-interface Body {
-  query: string;
-  // eslint-disable-next-line
-  variables: {
-    [key: string]: string | number;
-  };
-}
-
-interface EntryRaw {
-  media: {
-    idMal: number | null;
-  };
-}
-
-interface ListRaw {
-  entries: EntryRaw[];
-}
-
-interface MediaListRaw {
-  data: {
-    MediaListCollection: {
-      lists: ListRaw[];
-    };
-  };
-}
+import type {
+  Body,
+  OptionQueryAnilist,
+  UserAnilistRaw,
+  MediaListRaw,
+} from "types/responses/anilist";
 
 export default class AnilistService {
   private readonly _url: string = "https://graphql.anilist.co";
@@ -90,7 +53,7 @@ export default class AnilistService {
     return (await this._requestAnilistApi(body)) as UserAnilistRaw | null;
   }
 
-  public async getAnimesId(id: number, name: string): Promise<number[] | null> {
+  public async getAnimeIds(id: number, name: string): Promise<number[] | null> {
     const query = `
       query Query($userId: Int, $userName: String) {
         MediaListCollection(userId: $userId, userName: $userName, type: ANIME) {
@@ -123,7 +86,7 @@ export default class AnilistService {
     return malIds;
   }
 
-  public async getMangasId(id: number, name: string): Promise<number[] | null> {
+  public async getMangaIds(id: number, name: string): Promise<number[] | null> {
     const query = `
       query Query($userId: Int, $userName: String) {
         MediaListCollection(userId: $userId, userName: $userName, type: MANGA) {

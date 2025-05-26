@@ -1,6 +1,15 @@
-import { cuddle, echo, ping, welcome, anilist, quiz } from "commands/slash";
-import type { SlashCommand } from "types/slash-command";
+import {
+  cuddle,
+  echo,
+  ping,
+  welcome,
+  anilist,
+  quiz,
+  score,
+  leaderboard,
+} from "commands/slash";
+import type { SlashCommand } from "types/commands/slash";
 
 export function buildSlashCommand(): SlashCommand[] {
-  return [cuddle, echo, ping, welcome, anilist, quiz];
+  return [cuddle, echo, ping, welcome, anilist, quiz, score, leaderboard];
 }

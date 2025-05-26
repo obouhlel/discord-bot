@@ -6,8 +6,8 @@ import type { PrismaClient } from "generated/prisma";
 import { GatewayIntentBits, Partials } from "discord.js";
 import { REST, Routes } from "discord.js";
 // commands
-import type { MessageCommand } from "types/message-command";
-import type { SlashCommand } from "types/slash-command";
+import type { MessageCommand } from "types/commands/message";
+import type { SlashCommand } from "types/commands/slash";
 import { buildMessageCommands } from "../factories/message-command";
 import { buildSlashCommand } from "factories/slash-command";
 

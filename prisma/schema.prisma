@@ -24,7 +24,19 @@ model User {
   anilistUserId Int?         @unique
   anilist       AnilistUser? @relation(fields: [anilistUserId], references: [id])
   avatarId      String
+  scores        QuizScore[]
   tokens        Token[]
+}
+
+model QuizScore {
+  id        Int    @id @default(autoincrement())
+  discordId String
+  guildId   String
+  scores    Int    @default(0)
+  userId    Int?
+  User      User?  @relation(fields: [userId], references: [id])
+
+  @@unique([discordId, guildId])
 }
 
 model AnilistUser {

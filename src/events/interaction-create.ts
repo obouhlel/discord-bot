@@ -1,5 +1,5 @@
 import type { Interaction } from "discord.js";
-import type { SlashCommand } from "types/slash-command";
+import type { SlashCommand } from "types/commands/slash";
 
 export async function interactionCreate(
   interaction: Interaction,
