@@ -37,16 +37,23 @@ export class QuizManager {
     [4, "characters" as keyof QuizHint],
   ]);
 
+  private readonly _hintScore = new Map([
+    ["cover" as keyof QuizHint, 4],
+    ["synopsis" as keyof QuizHint, 4],
+    ["genres" as keyof QuizHint, 1],
+    ["characters" as keyof QuizHint, 1],
+  ]);
+
   private readonly _hintMapHandler = {
-    cover: (key: string, value: string) => this._handlerCover(key, value),
+    cover: (key: string, value: string) => this._displayCover(key, value),
     synopsis: (key: string, value: string) => this._handlerSynopsis(key, value),
-    genres: (key: string, value: string[]) => this._handlerGenres(key, value),
+    genres: (key: string, value: string[]) => this._displayGenres(key, value),
     characters: (key: string, value: QuizCharacters[]) =>
       this._handlerCharacter(key, value as QuizCharacters[]),
   };
 
   private readonly _regex: RegExp =
-    /[\s!~?.,"''\-_:;()[\]{}<>/\\|@#$%^&*+=×♀`©®™✓•]+|\s*\d+[a-z]*\s*season\s*\d+[a-z]*|part\s*\d*|oav|specials|ona|(the\s*)?movie|\s*\d+$/;
+    /[\s!~?.,"''\-_:;()[\]{}<>/\\|@#$%^&*+=×♀`©®™✓•]/;
 
   constructor(
     data: QuizData | string,
@@ -111,27 +118,38 @@ export class QuizManager {
     return [hint, this._data.hint[hint]];
   }
 
+  // HINT SCORE MANAGEMENT
+
+  private _canUseHint(param: keyof QuizHint): boolean {
+    const value = this._hintScore.get(param)!;
+    const score = this._data.score - value;
+
+    if (score < 1) {
+      return false;
+    }
+    this._data.score -= value;
+    return true;
+  }
+
   // HINT DISPLAY
 
-  private async _handlerCover(key: string, value: string) {
+  private async _displayCover(key: string, value: string) {
     const embed = new EmbedBuilder()
       .setTitle(capitalize(key))
       .setImage(value)
       .setColor("Random");
     await this._channel.send({ embeds: [embed] });
-    this._data.score -= 4;
   }
 
-  private async _handlerGenres(key: string, value: string[]) {
+  private async _displayGenres(key: string, value: string[]) {
     await this._channel.send(
       `**${capitalize(key)}:**\n${value.map((genre) => `- ${genre}\n`).join("")}`,
     );
-    this._data.score -= 1;
   }
 
   private async _handlerCharacter(key: string, value: QuizCharacters[]) {
     if (value.length === 0) {
-      await this._channel.send("All characters have been sent");
+      await this._channel.send(`All ${key} have been sent`);
       return;
     }
     const random = Math.floor(Math.random() * (value.length - 1));
@@ -144,17 +162,14 @@ export class QuizManager {
       (c) => character.id != c.id,
     );
     await this._channel.send({
-      content: `# ${capitalize(key)}`,
       embeds: [embed],
     });
-    this._data.score -= 1;
   }
 
   private async _handlerSynopsis(key: string, value: string) {
     await this._channel.send(
       `# ${capitalize(key.toString())}\n>>> ${value.toString()}`,
     );
-    this._data.score -= 4;
   }
 
   private async _hintHandler(key: keyof QuizHint, value: QuizHintType) {
@@ -181,7 +196,21 @@ export class QuizManager {
     return embed;
   }
 
-  // Match percentage
+  // Check title
+  private _cleanTitle(title: string): string {
+    const subname = /^.{5,}:/g;
+    const season = /\d+\w\s+season\s+\d+\w|part\s+\d+\w\s+|ova|ona|\d+$/g;
+    let newTitle: string | undefined = title.toLowerCase();
+
+    if (newTitle.match(subname)) {
+      newTitle = newTitle.split(":")[0];
+    } else if (newTitle.match(season)) {
+      newTitle = newTitle.split(season).join(" ");
+    }
+
+    return newTitle ?? title;
+  }
+
   private _matchPercentage(answer: string, title: string): boolean {
     const answerWords = answer.toLowerCase().split(this._regex).filter(Boolean);
     const titleWords = title.toLowerCase().split(this._regex).filter(Boolean);
@@ -241,14 +270,18 @@ export class QuizManager {
     return this._data.titles.some(
       (title) =>
         answer === title.title.toLowerCase() ||
-        this._matchPercentage(answer, title.title.toLowerCase()),
+        this._matchPercentage(answer, this._cleanTitle(title.title)),
     );
   }
 
-  // commands hint
+  // commands hint management
   public async hint(answer: string, quizId: string) {
     const [, param] = answer.split(" ");
-    if (param && param in this.getHints() && this._data.score > 1) {
+    if (
+      param &&
+      param in this.getHints() &&
+      this._canUseHint(param as keyof QuizHint)
+    ) {
       const hint = this._getHintValue(param as keyof QuizHint);
       if (!hint) {
         await this._channel.send(`The \`${param}\` not found in database`);
@@ -258,9 +291,8 @@ export class QuizManager {
       await this._updateData(quizId);
     } else if (
       param &&
-      /^\d+$/.test(param) &&
-      Number(param) <= this._hintParams.size &&
-      this._data.score > 1
+      this._hintNumberParams.get(Number(param)) &&
+      this._canUseHint(this._hintNumberParams.get(Number(param))!)
     ) {
       const result = this._getHintValueById(Number(param));
       if (!result) return;
@@ -268,7 +300,7 @@ export class QuizManager {
       await this._hintHandler(key, value);
       await this._updateData(quizId);
     } else {
-      if (this._data.score === 1) {
+      if (param) {
         await this._channel.send("You can't use more hint, use `!skip`.");
       } else {
         await this._channel.send({
