@@ -8,8 +8,8 @@ import { REST, Routes } from "discord.js";
 // commands
 import type { MessageCommand } from "types/commands/message";
 import type { SlashCommand } from "types/commands/slash";
-import { buildMessageCommands } from "../factories/message-command";
-import { buildSlashCommand } from "factories/slash-command";
+import { buildMessageCommands } from "commands/message-command";
+import { buildSlashCommand } from "commands/slash-command";
 
 export default class DiscordService {
   public client: CustomDiscordClient;

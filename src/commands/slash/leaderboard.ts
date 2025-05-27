@@ -1,5 +1,6 @@
 import {
   ApplicationIntegrationType,
+  EmbedBuilder,
   InteractionContextType,
   SlashCommandBuilder,
 } from "discord.js";
@@ -35,11 +36,14 @@ export const leaderboard = {
 
     const leaderboardLines: string[] = topScores.map(
       (score, index) =>
-        `${(index + 1).toString()} - <@!${score.discordId}> **${score.scores.toString()}**`,
+        `${(index + 1).toString()} - <@${score.discordId}> **${score.scores.toString()}**`,
     );
 
-    await interaction.reply(
-      `🏆 **Leaderboard Quiz**\n\n${leaderboardLines.join("\n")}`,
-    );
+    const embed = new EmbedBuilder()
+      .setColor("Gold")
+      .setTitle("🏆 Leaderboard Quiz")
+      .setDescription(leaderboardLines.join("\n"));
+
+    await interaction.reply({ embeds: [embed] });
   },
 };

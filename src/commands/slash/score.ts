@@ -1,5 +1,6 @@
 import {
   ApplicationIntegrationType,
+  EmbedBuilder,
   InteractionContextType,
   SlashCommandBuilder,
 } from "discord.js";
@@ -42,19 +43,31 @@ export const score = {
       },
     });
 
+    const embed = new EmbedBuilder().setColor("Gold").setTitle("Score");
+
     if (!quizScore) {
-      await interaction.reply(
-        user.id === interaction.user.id
-          ? "You don't have any points in this server."
-          : `<@${user.id}> doesn't have any points in this server.`,
-      );
+      if (user.id === interaction.user.id) {
+        embed.setDescription("You don't have any points in this server.");
+      } else {
+        embed.setDescription(
+          `<@${user.id}> doesn't have any points in this server.`,
+        );
+      }
+
+      await interaction.reply({ embeds: [embed] });
       return;
     }
 
-    await interaction.reply(
-      user.id === interaction.user.id
-        ? `Your score is **${quizScore.scores.toString()}** !`
-        : `<@!${user.id}>'s score is **${quizScore.scores.toString()}** !`,
-    );
+    if (user.id === interaction.user.id) {
+      embed.setDescription(
+        `Your score is **${quizScore.scores.toString()}** !`,
+      );
+    } else {
+      embed.setDescription(
+        `<@${user.id}>'s score is **${quizScore.scores.toString()}** !`,
+      );
+    }
+
+    await interaction.reply({ embeds: [embed] });
   },
 };
