@@ -270,7 +270,8 @@ export class QuizManager {
     return this._data.titles.some(
       (title) =>
         answer === title.title.toLowerCase() ||
-        this._matchPercentage(answer, this._cleanTitle(title.title)),
+        this._matchPercentage(answer, title.title) ||
+        answer === this._cleanTitle(title.title),
     );
   }
 
