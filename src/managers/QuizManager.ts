@@ -199,6 +199,7 @@ export class QuizManager {
   // Check title
   private _cleanTitle(title: string): string {
     const subname = /^.{5,}:/g;
+    const name = /^\w+!!/g;
     const season = /\d+\w\s+season\s+\d+\w|part\s+\d+\w\s+|ova|ona|\d+$/g;
     let newTitle: string | undefined = title.toLowerCase();
 
@@ -206,6 +207,8 @@ export class QuizManager {
       newTitle = newTitle.split(":")[0];
     } else if (newTitle.match(season)) {
       newTitle = newTitle.split(season).join(" ");
+    } else if (newTitle.match(name)) {
+      newTitle = newTitle.split("!!")[0];
     }
 
     return newTitle ?? title;
