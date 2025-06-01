@@ -198,37 +198,42 @@ export class QuizManager {
 
   // Check title
   private _cleanTitle(title: string): string {
-    const subname = /^.{5,}:/g;
-    const name = /^\w+!!/g;
-    const season = /\d+\w\s+season\s+\d+\w|part\s+\d+\w\s+|ova|ona|\d+$/g;
-    let newTitle: string | undefined = title.toLowerCase();
+    let newTitle: string | undefined = title.toLowerCase() as string;
+    const season =
+      /\d+\w\s+season\s+\d+\w|part\s+\d+\w\s+|ova|ona|(the)\s+movie\s+\d*|\d+$/g;
+    const regexMap = new Map([
+      [/^.{5,}:/g, ":"],
+      [/^\w+!!/g, "!!"],
+    ]);
 
-    if (newTitle.match(subname)) {
-      newTitle = newTitle.split(":")[0];
-    } else if (newTitle.match(season)) {
-      newTitle = newTitle.split(season).join(" ");
-    } else if (newTitle.match(name)) {
-      newTitle = newTitle.split("!!")[0];
+    for (const [regex, separator] of regexMap) {
+      if (newTitle!.match(regex)) {
+        newTitle = newTitle!.split(separator)[0];
+      }
+    }
+
+    if (newTitle!.match(season)) {
+      newTitle = newTitle!.split(season).join(" ");
     }
 
     return newTitle ?? title;
   }
 
-  private _matchPercentage(answer: string, title: string): boolean {
-    const answerWords = answer.toLowerCase().split(this._regex).filter(Boolean);
-    const titleWords = title.toLowerCase().split(this._regex).filter(Boolean);
-    const matchCount = titleWords.filter((word) =>
-      answerWords.includes(word),
-    ).length;
-    if (titleWords.length <= 3) {
-      const threshold = 100;
-      const percentage = Math.floor((matchCount / titleWords.length) * 100);
-      return percentage >= threshold;
-    }
-    const threshold = title.length > 30 ? 20 : 33;
-    const percentage = Math.floor((matchCount / titleWords.length) * 100);
-    return percentage >= threshold;
-  }
+  // private _matchPercentage(answer: string, title: string): boolean {
+  //   const answerWords = answer.toLowerCase().split(this._regex).filter(Boolean);
+  //   const titleWords = title.toLowerCase().split(this._regex).filter(Boolean);
+  //   const matchCount = titleWords.filter((word) =>
+  //     answerWords.includes(word)
+  //   ).length;
+  //   if (titleWords.length <= 3) {
+  //     const threshold = 100;
+  //     const percentage = Math.floor((matchCount / titleWords.length) * 100);
+  //     return percentage >= threshold;
+  //   }
+  //   const threshold = title.length > 30 ? 20 : 33;
+  //   const percentage = Math.floor((matchCount / titleWords.length) * 100);
+  //   return percentage >= threshold;
+  // }
 
   private async _updateData(key: string) {
     await this._redis.set(key, this.toJSON());
@@ -273,7 +278,7 @@ export class QuizManager {
     return this._data.titles.some(
       (title) =>
         answer === title.title.toLowerCase() ||
-        this._matchPercentage(answer, title.title) ||
+        // this._matchPercentage(answer, title.title) ||
         answer === this._cleanTitle(title.title),
     );
   }
