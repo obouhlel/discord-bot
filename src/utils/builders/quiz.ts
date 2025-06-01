@@ -1,4 +1,3 @@
-import axios from "axios";
 import type { RedisClient } from "bun";
 import type { TextChannel } from "discord.js";
 import type { AnimeResponse } from "types/responses/jikan/anime";
@@ -13,8 +12,12 @@ import { QuizManager } from "managers/QuizManager";
 const API_URL = "https://api.jikan.moe/v4";
 
 async function requestGet(url: string): Promise<unknown> {
-  const data = await axios.get<{ data?: unknown }>(url);
-  return data.data;
+  const response = await fetch(url);
+  if (!response.ok) {
+    return null;
+  }
+  const data = await response.json();
+  return data;
 }
 
 async function fetchMediaData(

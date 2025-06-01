@@ -8,13 +8,6 @@ export interface UserAnilistRaw {
   };
 }
 
-export interface OptionQueryAnilist {
-  headers: {
-    "Content-Type": string;
-    Accept: string;
-  };
-}
-
 export interface Body {
   query: string;
   // eslint-disable-next-line

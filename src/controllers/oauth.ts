@@ -2,7 +2,6 @@ import type { PrismaClient } from "generated/prisma";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { DiscordUser } from "types/discord-user";
 import type { TokenResponse } from "types/token-response";
-import axios from "axios";
 import type { RedisClient } from "bun";
 
 export async function redirectDiscord(reply: FastifyReply) {
@@ -20,28 +19,36 @@ export async function oauthDiscord(
   if (!code) return reply.status(400).send("Missing code");
 
   try {
-    const { data: token } = await axios.post<TokenResponse>(
-      "https://discord.com/api/oauth2/token",
-      new URLSearchParams({
+    const requestToken = new Request("https://discord.com/api/oauth2/token", {
+      method: "POST",
+      body: new URLSearchParams({
         grant_type: "authorization_code",
         code,
         redirect_uri: Bun.env.REDIRECT_URI,
       }),
-      {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        auth: {
-          username: Bun.env.CLIENT_ID,
-          password: Bun.env.CLIENT_SECRET,
-        },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${btoa(`${Bun.env.CLIENT_ID}:${Bun.env.CLIENT_SECRET}`)}`,
       },
-    );
+    });
+    const responseToken = await fetch(requestToken);
+    if (!responseToken.ok) {
+      throw new Error("Auth discord failled");
+    }
 
-    const { data: discordUser } = await axios.get<DiscordUser>(
-      "https://discord.com/api/users/@me",
-      {
-        headers: { Authorization: `Bearer ${token.access_token}` },
-      },
-    );
+    const token = (await responseToken.json()) as TokenResponse;
+
+    const requestUser = new Request("https://discord.com/api/users/@me", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token.access_token}` },
+    });
+
+    const responseUser = await fetch(requestUser);
+    if (!responseUser.ok) {
+      throw new Error("Discord user not found");
+    }
+
+    const discordUser = (await responseUser.json()) as DiscordUser;
 
     const dbUser = await prisma.user.upsert({
       where: {

@@ -1,7 +1,5 @@
-import axios, { AxiosError } from "axios";
 import type {
   Body,
-  OptionQueryAnilist,
   UserAnilistRaw,
   MediaListRaw,
 } from "types/responses/anilist";
@@ -10,26 +8,24 @@ export default class AnilistService {
   private readonly _url: string = "https://graphql.anilist.co";
 
   private async _requestAnilistApi(body: Body): Promise<unknown> {
-    const options: OptionQueryAnilist = {
+    const request = new Request(this._url, {
+      method: "POST",
+      body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-    };
+    });
 
     try {
-      const { data } = await axios.post<UserAnilistRaw>(
-        this._url,
-        body,
-        options,
-      );
+      const response = await fetch(request);
+      if (!response.ok) {
+        throw new Error("Anilist not found");
+      }
+      const data = await response.json();
       return data;
     } catch (e) {
-      if (e instanceof AxiosError) {
-        console.error(e.message);
-      } else {
-        console.error(e);
-      }
+      console.error(e);
       return null;
     }
   }
