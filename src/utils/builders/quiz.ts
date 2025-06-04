@@ -8,8 +8,11 @@ import type {
   CharacterResponse,
 } from "types/responses/jikan/characters";
 import { QuizManager } from "managers/QuizManager";
+import Random from "utils/random";
 
 const API_URL = "https://api.jikan.moe/v4";
+const UNKNOWN = "https://cdn.myanimelist.net/images/questionmark_23.gif";
+const RANDOM = new Random();
 
 async function requestGet(url: string): Promise<unknown> {
   const response = await fetch(url);
@@ -41,7 +44,7 @@ async function fetchCharacters(
 
 function selectRandomCharacter(characters: Character[]): Character | null {
   if (characters.length === 0) return null;
-  const random = Math.floor(Math.random() * characters.length);
+  const random = RANDOM.next() % characters.length;
   return characters[random]!;
 }
 
@@ -50,10 +53,10 @@ function formatCharactersList(
   excludeId: number,
 ): QuizCharacters[] {
   return characters
-    .map((c) => ({
-      id: c.character.mal_id,
-      name: c.character.name,
-      image: c.character.images.jpg.image_url,
+    .map((data) => ({
+      id: data.character.mal_id,
+      name: data.character.name,
+      image: data.character.images.jpg.image_url,
     }))
     .filter((c) => c.id !== excludeId);
 }
@@ -75,11 +78,16 @@ export async function buildQuizDataManager(
   timeouts: Map<string, NodeJS.Timeout>,
   channel: TextChannel,
 ): Promise<QuizManager | null> {
-  const mediaData = await fetchMediaData(id, type);
-  if (!mediaData) return null;
+  let mediaData: AnimeResponse | MangaResponse | null = null;
+  do {
+    mediaData = await fetchMediaData(id, type);
+  } while (!mediaData);
 
   const charactersData = await fetchCharacters(id, type);
-  const selectedCharacter = selectRandomCharacter(charactersData);
+  const characters = charactersData.filter(
+    (data) => !data.character.images.jpg.image_url.startsWith(UNKNOWN),
+  );
+  const selectedCharacter = selectRandomCharacter(characters);
   if (!selectedCharacter) return null;
 
   const characterId = selectedCharacter.character.mal_id;

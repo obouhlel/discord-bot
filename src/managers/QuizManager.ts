@@ -200,7 +200,7 @@ export class QuizManager {
   private _cleanTitle(title: string): string {
     let newTitle: string | undefined = title.toLowerCase() as string;
     const season =
-      /\d+\w\s+season\s+\d+\w|part\s+\d+\w\s+|ova|ona|(the)\s+movie\s+\d*|\d+$/g;
+      /\d+(st|nd|rd|th)?\s+season\s+\d*(st|nd|rd|th)?|part\s+\d+(st|nd|rd|th)?\s*|ova|ona|(the)?\s+movie\s*\d*|\d+$/gi;
     const regexMap = new Map([
       [/^.{5,}:/g, ":"],
       [/^\w+!!/g, "!!"],
@@ -230,7 +230,7 @@ export class QuizManager {
       const percentage = Math.floor((matchCount / titleWords.length) * 100);
       return percentage >= threshold;
     }
-    const threshold = title.length > 30 ? 20 : 33;
+    const threshold = title.length > 30 ? 25 : 33;
     const percentage = Math.floor((matchCount / titleWords.length) * 100);
     return percentage >= threshold;
   }

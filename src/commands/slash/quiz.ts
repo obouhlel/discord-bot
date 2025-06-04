@@ -88,7 +88,7 @@ export const quiz = {
       channel as TextChannel,
     );
     if (!data) {
-      await interaction.editReply(`${capitalize(type)} not found`);
+      await interaction.editReply(`${capitalize(type)} character not found`);
       return;
     }
 
@@ -102,7 +102,7 @@ export const quiz = {
       `    - Example: \`Attack on Titan season 3 part 2\` or \`Attack on Titan 2\``,
       `  - Short titles (3 words or less): 100% match`,
       "  - Long titles (more than 3 words):",
-      `    - Over 30 chars: 20% word match`,
+      `    - Over 30 chars: 25% word match`,
       `    - Under 30 chars: 33% word match`,
       "- **Commands:**",
       "  - `!hint` for a hint",
