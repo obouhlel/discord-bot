@@ -105,7 +105,7 @@ export async function buildQuizDataManager(
       synopsis: mediaInfo.synopsis,
       genres: mediaInfo.genres,
       cover: mediaInfo.cover,
-      characters: formatCharactersList(charactersData, characterId),
+      characters: formatCharactersList(characters, characterId),
     },
     titles: mediaInfo.titles,
     url: mediaInfo.url,
