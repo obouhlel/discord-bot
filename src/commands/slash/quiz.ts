@@ -17,6 +17,9 @@ import type { QuizType } from "types/quiz";
 import { capitalize } from "utils/capitalize";
 import { getAnilistUser } from "utils/database/get-anilist-user";
 import { buildQuizDataManager } from "utils/builders/quiz";
+import Random from "utils/random";
+
+const RANDOM = new Random();
 
 export const quiz = {
   data: new SlashCommandBuilder()
@@ -74,7 +77,7 @@ export const quiz = {
     }
 
     const malIds = type === "anime" ? anilistUser.animeId : anilistUser.mangaId;
-    const index = Math.floor(Math.random() * (malIds.length - 1));
+    const index = RANDOM.next() % malIds.length;
     const malId = malIds[index]!;
 
     const data = await buildQuizDataManager(
