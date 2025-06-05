@@ -5,7 +5,6 @@ import type {
   User,
 } from "discord.js";
 import {
-  ApplicationIntegrationType,
   InteractionContextType,
   SlashCommandBuilder,
   EmbedBuilder,
@@ -23,7 +22,6 @@ export const quiz = {
     .setDescription(
       "Start an anime quiz with a character in the current channel",
     )
-    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
     .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild]),
 
   async execute(interaction: ChatInputCommandInteraction) {

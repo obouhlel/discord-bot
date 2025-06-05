@@ -1,5 +1,4 @@
 import {
-  ApplicationIntegrationType,
   EmbedBuilder,
   InteractionContextType,
   SlashCommandBuilder,
@@ -20,8 +19,7 @@ export const score = {
         .setDescription("Show a score of another user")
         .setRequired(false),
     )
-    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
-    .setContexts([InteractionContextType.BotDM]),
+    .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild]),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const { prisma } = interaction.client as CustomDiscordClient;
