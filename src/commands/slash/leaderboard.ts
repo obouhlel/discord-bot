@@ -22,6 +22,7 @@ export const leaderboard = {
 
     const topScores = await prisma.quizScore.findMany({
       orderBy: { scores: "desc" },
+      include: { User: true },
       take: 5,
     });
 
@@ -32,7 +33,7 @@ export const leaderboard = {
 
     const leaderboardLines: string[] = topScores.map(
       (score, index) =>
-        `${(index + 1).toString()} - <@${score.discordId}> **${score.scores.toString()}**`,
+        `${(index + 1).toString()} - ${score.User.username} **${score.scores.toString()}** points`,
     );
 
     const embed = new EmbedBuilder()
