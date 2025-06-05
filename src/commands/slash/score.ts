@@ -1,7 +1,8 @@
 import {
-  EmbedBuilder,
+  ApplicationIntegrationType,
   InteractionContextType,
   SlashCommandBuilder,
+  EmbedBuilder,
 } from "discord.js";
 import type {
   ChatInputCommandInteraction,
@@ -19,6 +20,10 @@ export const score = {
         .setDescription("Show a score of another user")
         .setRequired(false),
     )
+    .setIntegrationTypes([
+      ApplicationIntegrationType.GuildInstall,
+      ApplicationIntegrationType.UserInstall,
+    ])
     .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild]),
 
   async execute(interaction: ChatInputCommandInteraction) {

@@ -1,4 +1,5 @@
 import {
+  ApplicationIntegrationType,
   EmbedBuilder,
   InteractionContextType,
   SlashCommandBuilder,
@@ -10,6 +11,10 @@ export const leaderboard = {
   data: new SlashCommandBuilder()
     .setName("leaderboard")
     .setDescription("The top 5 in the server")
+    .setIntegrationTypes([
+      ApplicationIntegrationType.GuildInstall,
+      ApplicationIntegrationType.UserInstall,
+    ])
     .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild]),
 
   async execute(interaction: ChatInputCommandInteraction) {
