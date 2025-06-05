@@ -34,14 +34,17 @@ export const quiz = {
     const user: User = interaction.user;
     const channel: TextBasedChannel | null = interaction.channel;
 
-    if (!channel) {
+    if (!channel || !channel.isSendable()) {
       await interaction.reply("I cannot interact with this channel.");
       return;
     }
 
     const key = `quiz:${user.id}:${channel.id}`;
 
-    await interaction.deferReply();
+    await interaction.reply({
+      content: "The quiz will be sent...",
+      flags: ["Ephemeral"],
+    });
 
     const keys = await redis.keys(`quiz:*:${channel.id}`);
     if (keys.length >= 1) {
@@ -81,7 +84,7 @@ export const quiz = {
 
     const embed = data.getQuizEmbed();
 
-    await interaction.editReply({
+    await channel.send({
       content: "Type `!rules` to see the rules",
       embeds: [embed],
     });

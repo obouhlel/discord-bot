@@ -49,7 +49,7 @@ function formatCharactersList(
     .map((data) => ({
       id: data.character.mal_id,
       name: data.character.name,
-      image: data.character.images.jpg.image_url,
+      image: data.character.images.webp.image_url,
     }))
     .filter((c) => c.id !== excludeId);
 }
@@ -60,7 +60,7 @@ function extractMediaInfo(media: AnimeResponse) {
     url: media.data.url,
     synopsis: media.data.synopsis,
     genres: media.data.genres.map((genre) => genre.name),
-    cover: media.data.images.jpg.large_image_url,
+    cover: media.data.images.webp.large_image_url,
   };
 }
 
