@@ -1,7 +1,9 @@
+import type { AnimeStatus, AnimeStatusId } from "types/anime-status";
 import type {
   Body,
   UserAnilistRaw,
-  MediaListRaw,
+  AnimeListRaw,
+  UserAnilist,
 } from "types/responses/anilist";
 
 export default class AnilistService {
@@ -30,13 +32,19 @@ export default class AnilistService {
     }
   }
 
-  public async getUser(name: string): Promise<UserAnilistRaw | null> {
+  public async getUser(name: string): Promise<UserAnilist | null> {
     const query = `
       query Query($name: String) {
         User(name: $name) {
           id
           name
           siteUrl
+          avatar {
+            large
+          }
+          options {
+            profileColor
+          }
         }
       }
     `;
@@ -46,22 +54,31 @@ export default class AnilistService {
       variables: { name: name },
     };
 
-    return (await this._requestAnilistApi(body)) as UserAnilistRaw | null;
+    const data = (await this._requestAnilistApi(body)) as UserAnilistRaw | null;
+    if (!data) return null;
+
+    return data.data.User;
   }
 
-  public async getAnimeIds(id: number, name: string): Promise<number[] | null> {
+  public async getMalIds(
+    id: number,
+    name: string,
+  ): Promise<AnimeStatusId[] | null> {
     const query = `
-      query Query($userId: Int, $userName: String) {
-        MediaListCollection(userId: $userId, userName: $userName, type: ANIME) {
-          lists {
-            entries {
-              media {
-                idMal
-              }
+    query MediaListCollection($userId: Int, $userName: String) {
+      MediaListCollection(userId: $userId, userName: $userName, type: ANIME) {
+        lists {
+          name
+          status
+          entries {
+            media {
+              idMal
+              isAdult
             }
           }
         }
       }
+    }
     `;
 
     const body: Body = {
@@ -72,46 +89,39 @@ export default class AnilistService {
       },
     };
 
-    const data = (await this._requestAnilistApi(body)) as MediaListRaw | null;
+    const data = (await this._requestAnilistApi(body)) as AnimeListRaw | null;
     if (!data) return null;
-    const malIds = data.data.MediaListCollection.lists
-      .flatMap((list) => list.entries)
-      .map((entry) => entry.media.idMal)
-      .filter((id) => id !== null);
+    const lists = data.data.MediaListCollection.lists.filter(
+      (list) => !list.name.toLowerCase().includes("music"),
+    );
 
-    return malIds;
-  }
+    const statuses: AnimeStatus[] = [
+      "CURRENT",
+      "COMPLETED",
+      "PAUSED",
+      "DROPPED",
+      "PLANNING",
+    ];
 
-  public async getMangaIds(id: number, name: string): Promise<number[] | null> {
-    const query = `
-      query Query($userId: Int, $userName: String) {
-        MediaListCollection(userId: $userId, userName: $userName, type: MANGA) {
-          lists {
-            entries {
-              media {
-                idMal
-              }
-            }
-          }
-        }
-      }
-    `;
+    const extractIds = (status: AnimeStatus) =>
+      lists
+        .filter((list) => list.status === status)
+        .flatMap((list) =>
+          list.entries
+            .filter((entry) => !entry.media.isAdult)
+            .map((entry) => entry.media.idMal)
+            .filter((id) => id !== null),
+        );
 
-    const body: Body = {
-      query,
-      variables: {
-        userId: id,
-        userName: name,
-      },
-    };
+    const animes = new Array<AnimeStatusId>();
 
-    const data = (await this._requestAnilistApi(body)) as MediaListRaw | null;
-    if (!data) return null;
-    const malIds = data.data.MediaListCollection.lists
-      .flatMap((list) => list.entries)
-      .map((entry) => entry.media.idMal)
-      .filter((id) => id !== null);
+    for (const status of statuses) {
+      animes.push({
+        name: status,
+        malId: extractIds(status),
+      });
+    }
 
-    return malIds;
+    return animes;
   }
 }

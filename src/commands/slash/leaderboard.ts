@@ -12,25 +12,18 @@ export const leaderboard = {
     .setName("leaderboard")
     .setDescription("The top 5 in the server")
     .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
-    .setContexts([InteractionContextType.Guild]),
+    .setContexts([InteractionContextType.BotDM]),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const { prisma } = interaction.client as CustomDiscordClient;
-    const guild = interaction.guild;
-
-    if (!guild) {
-      await interaction.reply("You are not in a server");
-      return;
-    }
 
     const topScores = await prisma.quizScore.findMany({
-      where: { guildId: guild.id },
       orderBy: { scores: "desc" },
       take: 5,
     });
 
     if (topScores.length === 0) {
-      await interaction.reply("There are no scores in this server yet.");
+      await interaction.reply("There are no scores.");
       return;
     }
 

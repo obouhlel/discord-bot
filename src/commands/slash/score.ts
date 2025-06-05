@@ -21,25 +21,16 @@ export const score = {
         .setRequired(false),
     )
     .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
-    .setContexts([InteractionContextType.Guild]),
+    .setContexts([InteractionContextType.BotDM]),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const { prisma } = interaction.client as CustomDiscordClient;
 
     const user = interaction.options.getUser("user") ?? interaction.user;
-    const guild = interaction.guild;
-
-    if (!guild) {
-      await interaction.reply("You are not in a server");
-      return;
-    }
 
     const quizScore = await prisma.quizScore.findUnique({
       where: {
-        discordId_guildId: {
-          discordId: user.id,
-          guildId: guild.id,
-        },
+        discordId: user.id,
       },
     });
 
@@ -47,11 +38,9 @@ export const score = {
 
     if (!quizScore) {
       if (user.id === interaction.user.id) {
-        embed.setDescription("You don't have any points in this server.");
+        embed.setDescription("You don't have any points.");
       } else {
-        embed.setDescription(
-          `<@${user.id}> doesn't have any points in this server.`,
-        );
+        embed.setDescription(`<@${user.id}> doesn't have any points.`);
       }
 
       await interaction.reply({ embeds: [embed] });

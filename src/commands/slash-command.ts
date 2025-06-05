@@ -3,7 +3,7 @@ import {
   echo,
   ping,
   welcome,
-  anilist,
+  register,
   quiz,
   score,
   leaderboard,
@@ -11,5 +11,5 @@ import {
 import type { SlashCommand } from "types/commands/slash";
 
 export function buildSlashCommand(): SlashCommand[] {
-  return [cuddle, echo, ping, welcome, anilist, quiz, score, leaderboard];
+  return [cuddle, echo, ping, welcome, register, quiz, score, leaderboard];
 }

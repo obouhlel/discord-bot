@@ -1,7 +1,5 @@
 import type { TitleMedia } from "./responses/title";
 
-export type QuizType = "anime" | "manga";
-
 export type QuizHintType = string | string[] | QuizCharacters[];
 
 export interface QuizCharacter {
@@ -28,6 +26,5 @@ export interface QuizData {
   hint: QuizHint;
   titles: TitleMedia[];
   url: string;
-  type: QuizType;
   score: number;
 }

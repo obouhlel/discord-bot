@@ -1,8 +1,7 @@
 import type { RedisClient } from "bun";
 import type { TextChannel } from "discord.js";
 import type { AnimeResponse } from "types/responses/jikan/anime";
-import type { MangaResponse } from "types/responses/jikan/manga";
-import type { QuizCharacters, QuizData, QuizType } from "types/quiz";
+import type { QuizCharacters, QuizData } from "types/quiz";
 import type {
   Character,
   CharacterResponse,
@@ -23,19 +22,13 @@ async function requestGet(url: string): Promise<unknown> {
   return data;
 }
 
-async function fetchMediaData(
-  id: number,
-  type: QuizType,
-): Promise<AnimeResponse | MangaResponse | null> {
-  const urlMedia = `${API_URL}/${type}/${id.toString()}`;
-  return (await requestGet(urlMedia)) as AnimeResponse | MangaResponse | null;
+async function fetchMediaData(id: number): Promise<AnimeResponse | null> {
+  const urlMedia = `${API_URL}/anime/${id.toString()}`;
+  return (await requestGet(urlMedia)) as AnimeResponse | null;
 }
 
-async function fetchCharacters(
-  id: number,
-  type: QuizType,
-): Promise<Character[]> {
-  const urlCharacters = `${API_URL}/${type}/${id.toString()}/characters`;
+async function fetchCharacters(id: number): Promise<Character[]> {
+  const urlCharacters = `${API_URL}/anime/${id.toString()}/characters`;
   const response = (await requestGet(
     urlCharacters,
   )) as CharacterResponse | null;
@@ -61,7 +54,7 @@ function formatCharactersList(
     .filter((c) => c.id !== excludeId);
 }
 
-function extractMediaInfo(media: AnimeResponse | MangaResponse) {
+function extractMediaInfo(media: AnimeResponse) {
   return {
     titles: media.data.titles,
     url: media.data.url,
@@ -73,17 +66,16 @@ function extractMediaInfo(media: AnimeResponse | MangaResponse) {
 
 export async function buildQuizDataManager(
   id: number,
-  type: QuizType,
   redis: RedisClient,
   timeouts: Map<string, NodeJS.Timeout>,
   channel: TextChannel,
 ): Promise<QuizManager | null> {
-  let mediaData: AnimeResponse | MangaResponse | null = null;
+  let mediaData: AnimeResponse | null = null;
   do {
-    mediaData = await fetchMediaData(id, type);
+    mediaData = await fetchMediaData(id);
   } while (!mediaData);
 
-  const charactersData = await fetchCharacters(id, type);
+  const charactersData = await fetchCharacters(id);
   const characters = charactersData.filter(
     (data) => !data.character.images.jpg.image_url.startsWith(UNKNOWN),
   );
@@ -109,7 +101,6 @@ export async function buildQuizDataManager(
     },
     titles: mediaInfo.titles,
     url: mediaInfo.url,
-    type,
     score: 5,
   };
 
