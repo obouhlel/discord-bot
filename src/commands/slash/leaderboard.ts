@@ -10,7 +10,7 @@ import type CustomDiscordClient from "types/custom-discord-client";
 export const leaderboard = {
   data: new SlashCommandBuilder()
     .setName("leaderboard")
-    .setDescription("The top 5 for all user in quiz")
+    .setDescription("Top 5 users in the quiz")
     .setIntegrationTypes([
       ApplicationIntegrationType.GuildInstall,
       ApplicationIntegrationType.UserInstall,
@@ -27,18 +27,18 @@ export const leaderboard = {
     });
 
     if (topScores.length === 0) {
-      await interaction.reply("There are no scores.");
+      await interaction.reply("No scores available.");
       return;
     }
 
     const leaderboardLines: string[] = topScores.map(
       (score, index) =>
-        `${(index + 1).toString()} - ${score.User.username} **${score.scores.toString()}** points`,
+        `${(index + 1).toString()}. ${score.User.username} with **${score.scores.toString()}** points`,
     );
 
     const embed = new EmbedBuilder()
       .setColor("Gold")
-      .setTitle("🏆 Leaderboard Quiz")
+      .setTitle("🏆 Quiz Leaderboard")
       .setDescription(leaderboardLines.join("\n"));
 
     await interaction.reply({ embeds: [embed] });
