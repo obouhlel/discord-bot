@@ -49,19 +49,22 @@ export default class AnilistService {
     return (await this._requestAnilistApi(body)) as UserAnilistRaw | null;
   }
 
-  public async getAnimeIds(id: number, name: string): Promise<number[] | null> {
+  public async getMalIds(id: number, name: string): Promise<number[] | null> {
     const query = `
-      query Query($userId: Int, $userName: String) {
-        MediaListCollection(userId: $userId, userName: $userName, type: ANIME) {
-          lists {
-            entries {
-              media {
-                idMal
-              }
+    query MediaListCollection($userId: Int, $userName: String) {
+      MediaListCollection(userId: $userId, userName: $userName, type: ANIME) {
+        lists {
+          name
+          status
+          entries {
+            media {
+              idMal
+              isAdult
             }
           }
         }
       }
+    }
     `;
 
     const body: Body = {
@@ -74,44 +77,8 @@ export default class AnilistService {
 
     const data = (await this._requestAnilistApi(body)) as MediaListRaw | null;
     if (!data) return null;
-    const malIds = data.data.MediaListCollection.lists
-      .flatMap((list) => list.entries)
-      .map((entry) => entry.media.idMal)
-      .filter((id) => id !== null);
+    console.log(data);
 
-    return malIds;
-  }
-
-  public async getMangaIds(id: number, name: string): Promise<number[] | null> {
-    const query = `
-      query Query($userId: Int, $userName: String) {
-        MediaListCollection(userId: $userId, userName: $userName, type: MANGA) {
-          lists {
-            entries {
-              media {
-                idMal
-              }
-            }
-          }
-        }
-      }
-    `;
-
-    const body: Body = {
-      query,
-      variables: {
-        userId: id,
-        userName: name,
-      },
-    };
-
-    const data = (await this._requestAnilistApi(body)) as MediaListRaw | null;
-    if (!data) return null;
-    const malIds = data.data.MediaListCollection.lists
-      .flatMap((list) => list.entries)
-      .map((entry) => entry.media.idMal)
-      .filter((id) => id !== null);
-
-    return malIds;
+    return [];
   }
 }

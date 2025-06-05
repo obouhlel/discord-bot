@@ -1,7 +1,6 @@
 import type { RedisClient } from "bun";
 import type { TextChannel } from "discord.js";
 import type { AnimeResponse } from "types/responses/jikan/anime";
-import type { MangaResponse } from "types/responses/jikan/manga";
 import type { QuizCharacters, QuizData } from "types/quiz";
 import type {
   Character,
@@ -23,11 +22,9 @@ async function requestGet(url: string): Promise<unknown> {
   return data;
 }
 
-async function fetchMediaData(
-  id: number,
-): Promise<AnimeResponse | MangaResponse | null> {
+async function fetchMediaData(id: number): Promise<AnimeResponse | null> {
   const urlMedia = `${API_URL}/anime/${id.toString()}`;
-  return (await requestGet(urlMedia)) as AnimeResponse | MangaResponse | null;
+  return (await requestGet(urlMedia)) as AnimeResponse | null;
 }
 
 async function fetchCharacters(id: number): Promise<Character[]> {
@@ -57,7 +54,7 @@ function formatCharactersList(
     .filter((c) => c.id !== excludeId);
 }
 
-function extractMediaInfo(media: AnimeResponse | MangaResponse) {
+function extractMediaInfo(media: AnimeResponse) {
   return {
     titles: media.data.titles,
     url: media.data.url,
@@ -73,7 +70,7 @@ export async function buildQuizDataManager(
   timeouts: Map<string, NodeJS.Timeout>,
   channel: TextChannel,
 ): Promise<QuizManager | null> {
-  let mediaData: AnimeResponse | MangaResponse | null = null;
+  let mediaData: AnimeResponse | null = null;
   do {
     mediaData = await fetchMediaData(id);
   } while (!mediaData);
