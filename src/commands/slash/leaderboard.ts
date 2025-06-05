@@ -12,7 +12,7 @@ export const leaderboard = {
     .setName("leaderboard")
     .setDescription("The top 5 in the server")
     .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
-    .setContexts([InteractionContextType.BotDM]),
+    .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild]),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const { prisma } = interaction.client as CustomDiscordClient;
