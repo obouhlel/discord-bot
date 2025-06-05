@@ -79,10 +79,12 @@ export const quiz = {
       return;
     }
 
-    const content = data.getContent(user.id, channel.id);
     const embed = data.getQuizEmbed();
 
-    await interaction.editReply({ content: content, embeds: [embed] });
+    await interaction.editReply({
+      content: "Type `!rules` to see the rules",
+      embeds: [embed],
+    });
     await data.start(key);
   },
 };

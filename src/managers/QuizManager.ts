@@ -104,11 +104,9 @@ export class QuizManager {
     return this._data.score;
   }
 
-  public getContent(userId: string, channelId: string): string {
+  public getRules(): string {
     return [
       `# Anime Quiz`,
-      `- Using <@!${userId}>'s AniList`,
-      `- Active in <#${channelId}>`,
       `- Guess the anime title`,
       "- **Answer Requirements:**",
       `  - No need to include season or part`,

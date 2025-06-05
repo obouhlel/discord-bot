@@ -38,6 +38,10 @@ export default class Quiz extends MessageCommand {
     const quiz = new QuizManager(value, redis, timeouts, channel);
     const answer = message.content.toLowerCase();
 
+    if (answer === "!rules") {
+      await channel.send(quiz.getRules());
+    }
+
     if (answer.startsWith("!hint")) {
       await quiz.hint(answer, key);
       return;
