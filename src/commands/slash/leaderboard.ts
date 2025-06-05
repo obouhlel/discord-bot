@@ -10,7 +10,7 @@ import type CustomDiscordClient from "types/custom-discord-client";
 export const leaderboard = {
   data: new SlashCommandBuilder()
     .setName("leaderboard")
-    .setDescription("The top 5 in the server")
+    .setDescription("The top 5 for all user in quiz")
     .setIntegrationTypes([
       ApplicationIntegrationType.GuildInstall,
       ApplicationIntegrationType.UserInstall,
