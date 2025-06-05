@@ -55,7 +55,7 @@ export const quiz = {
     const anilistUser = await getAnilistUser(prisma, user);
     if (!anilistUser) {
       await interaction.editReply(
-        "Please run the ``/register`` in dm to register your list",
+        "Please run the `/register` command in DM to register your anime list",
       );
       return;
     }
