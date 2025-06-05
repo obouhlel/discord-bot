@@ -202,7 +202,7 @@ export class QuizManager {
     const season =
       /\d+(st|nd|rd|th)?\s+season\s+\d*(st|nd|rd|th)?|part\s+\d+(st|nd|rd|th)?\s*|ova|ona|(the)?\s+movie\s*\d*|\d+$/gi;
     const regexMap = new Map([
-      [/^.{5,}:/g, ":"],
+      [/^.{4,}:/g, ":"],
       [/^\w+!!/g, "!!"],
     ]);
 
