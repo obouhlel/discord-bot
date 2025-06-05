@@ -10,7 +10,7 @@ import type CustomDiscordClient from "types/custom-discord-client";
 export const leaderboard = {
   data: new SlashCommandBuilder()
     .setName("leaderboard")
-    .setDescription("Top 5 users in the quiz")
+    .setDescription("Top 10 users in the quiz")
     .setIntegrationTypes([
       ApplicationIntegrationType.GuildInstall,
       ApplicationIntegrationType.UserInstall,
@@ -23,7 +23,7 @@ export const leaderboard = {
     const topScores = await prisma.quizScore.findMany({
       orderBy: { scores: "desc" },
       include: { User: true },
-      take: 5,
+      take: 10,
     });
 
     if (topScores.length === 0) {
