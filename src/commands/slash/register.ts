@@ -1,6 +1,7 @@
 import type {
   ButtonInteraction,
   ChatInputCommandInteraction,
+  ColorResolvable,
   DMChannel,
   Message,
 } from "discord.js";
@@ -50,7 +51,8 @@ export const register = {
       new ButtonBuilder()
         .setCustomId("register_mal")
         .setLabel("MyAnimeList")
-        .setStyle(ButtonStyle.Primary),
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true),
     );
 
     await interaction.reply({ embeds: [embed], components: [row] });
@@ -75,8 +77,10 @@ export const register = {
 
   async anilist(interaction: ButtonInteraction) {
     const channel = interaction.channel as DMChannel | null;
+    const user = interaction.user;
+    const { prisma } = interaction.client as CustomDiscordClient;
     if (!channel) {
-      await interaction.reply("Please use it in the correct channel");
+      await interaction.reply("Please use it in the dm of bot channel");
       return;
     }
     await interaction.reply("Please send your Anilist username");
@@ -103,17 +107,75 @@ export const register = {
       const anilist = new AnilistService();
       const anilistUser = await anilist.getUser(username);
       if (!anilistUser) {
-        await channel.send(
-          `The username \`${username}\` not found in database`,
-        );
+        const embed = new EmbedBuilder()
+          .setTitle("Error")
+          .setColor("Red")
+          .setDescription("User not found");
+        await channel.send({ embeds: [embed] });
         return;
       }
 
+      const dbUser = await prisma.user.findUnique({
+        where: {
+          discordId: user.id,
+        },
+      });
+      if (!dbUser) {
+        await channel.send("Please retry the command `/register`");
+        return;
+      }
+
+      const animes = await anilist.getMalIds(anilistUser.id, anilistUser.name);
+      if (!animes) {
+        await channel.send("Please retry the command `/register`");
+        return;
+      }
+
+      await prisma.animeListUser.upsert({
+        where: {
+          userId: dbUser.id,
+        },
+        create: {
+          type: "ANILIST",
+          typeId: anilistUser.id,
+          username: anilistUser.name,
+          status: ["CURRENT", "COMPLETED", "DROPPED", "PAUSED", "PLANNING"],
+          animes: {
+            createMany: {
+              data: animes,
+            },
+          },
+          userId: dbUser.id,
+        },
+        update: {
+          type: "ANILIST",
+          typeId: anilistUser.id,
+          username: anilistUser.name,
+          animes: {
+            deleteMany: {},
+            createMany: {
+              data: animes,
+            },
+          },
+          userId: dbUser.id,
+        },
+      });
+
+      const nbAnimes = animes
+        .flatMap((status) => status.malId)
+        .flat()
+        .length.toString();
+
       const embed = new EmbedBuilder()
-        .setTitle(capitalize(anilistUser.data.User.name))
-        .setColor("Blue")
-        .setDescription("User found")
-        .setURL(anilistUser.data.User.siteUrl);
+        .setTitle(capitalize(anilistUser.name))
+        .setImage(anilistUser.avatar.large)
+        .setColor(
+          capitalize(anilistUser.options.profileColor) as ColorResolvable,
+        )
+        .setDescription(
+          `User found with ${nbAnimes}, if you want to sort please type \`/filter\``,
+        )
+        .setURL(anilistUser.siteUrl);
 
       await channel.send({ embeds: [embed] });
     });

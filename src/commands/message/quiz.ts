@@ -1,5 +1,5 @@
 import type { MessageCommandContext } from "types/commands/message";
-import type { Guild, TextChannel, User } from "discord.js";
+import type { TextChannel, User } from "discord.js";
 import type { PrismaClient } from "generated/prisma";
 import { QuizManager } from "managers/QuizManager";
 import { EmbedBuilder } from "discord.js";
@@ -19,22 +19,18 @@ export default class Quiz extends MessageCommand {
     if (message.author.bot) return false;
 
     const { redis } = client;
-    const guild = message.guild;
     const channelId = message.channelId;
 
-    if (!guild) return false;
-
-    const keys = await redis.keys(`quiz:${guild.id}:${channelId}`);
+    const keys = await redis.keys(`quiz:*:${channelId}`);
     if (!keys[0]) return false;
     return true;
   }
 
   async execute({ client, message }: MessageCommandContext): Promise<void> {
     const { prisma, redis, timeouts } = client;
-    const guild = message.guild!;
     const user = message.author;
     const channel = message.channel as TextChannel;
-    const keys = await redis.keys(`quiz:${guild.id}:${channel.id}`);
+    const keys = await redis.keys(`quiz:*:${channel.id}`);
     const key = keys[0]!;
     const value = await redis.get(key);
     if (!value) return;
@@ -62,7 +58,7 @@ export default class Quiz extends MessageCommand {
     if (res) {
       await quiz.clear(key);
       try {
-        await updateScore(prisma, quiz.getScore(), user, guild);
+        await updateScore(prisma, quiz.getScore(), user);
       } catch (error) {
         console.error(error);
       } finally {
@@ -80,53 +76,37 @@ export default class Quiz extends MessageCommand {
   }
 }
 
-async function updateScore(
-  prisma: PrismaClient,
-  score: number,
-  user: User,
-  guild: Guild,
-) {
-  await prisma.user.upsert({
+async function updateScore(prisma: PrismaClient, score: number, user: User) {
+  if (!user.globalName || !user.avatar) return;
+  const dbUser = await prisma.user.upsert({
     where: {
       discordId: user.id,
     },
     update: {
-      name: user.globalName!,
+      name: user.globalName,
       username: user.username,
-      avatarId: user.avatar!,
-      scores: {
-        upsert: {
-          where: {
-            discordId_guildId: {
-              discordId: user.id,
-              guildId: guild.id,
-            },
-          },
-          create: {
-            discordId: user.id,
-            guildId: guild.id,
-            scores: score,
-          },
-          update: {
-            scores: {
-              increment: score,
-            },
-          },
-        },
-      },
+      avatarId: user.avatar,
     },
     create: {
       discordId: user.id,
-      name: user.globalName!,
+      name: user.globalName,
       username: user.username,
-      avatarId: user.avatar!,
-      scores: {
-        create: {
-          discordId: user.id,
-          guildId: guild.id,
-          scores: score,
-        },
-      },
+      avatarId: user.avatar,
+    },
+  });
+
+  await prisma.quizScore.upsert({
+    where: {
+      userId: dbUser.id,
+      discordId: user.id,
+    },
+    create: {
+      discordId: user.id,
+      scores: score,
+      userId: dbUser.id,
+    },
+    update: {
+      scores: { increment: score },
     },
   });
 }

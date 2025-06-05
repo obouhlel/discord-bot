@@ -1,23 +1,30 @@
 import type { User } from "discord.js";
-import type { AnilistUser, PrismaClient } from "generated/prisma";
+import type { Prisma, PrismaClient } from "generated/prisma";
+
+type AnimeListUserWithAnimes = Prisma.AnimeListUserGetPayload<{
+  include: { animes: true };
+}>;
 
 export async function getAnilistUser(
   prisma: PrismaClient,
   user: User,
-): Promise<AnilistUser | null> {
+): Promise<AnimeListUserWithAnimes | null> {
   const dbUser = await prisma.user.findUnique({
     where: {
       discordId: user.id,
     },
   });
 
-  if (!dbUser || !dbUser.anilistUserId) return null;
+  if (!dbUser) return null;
 
-  const anilistUser = await prisma.anilistUser.findUnique({
+  const animeListUser = await prisma.animeListUser.findUnique({
     where: {
-      id: dbUser.anilistUserId,
+      userId: dbUser.id,
+    },
+    include: {
+      animes: true,
     },
   });
 
-  return anilistUser;
+  return animeListUser;
 }

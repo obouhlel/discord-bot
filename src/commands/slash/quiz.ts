@@ -2,7 +2,6 @@ import type {
   ChatInputCommandInteraction,
   TextBasedChannel,
   TextChannel,
-  Guild,
   User,
 } from "discord.js";
 import {
@@ -29,15 +28,14 @@ export const quiz = {
     const client = interaction.client as CustomDiscordClient;
     const { prisma, redis, timeouts } = client;
     const user: User = interaction.user;
-    const guild: Guild | null = interaction.guild;
     const channel: TextBasedChannel | null = interaction.channel;
 
-    if (!channel || !guild) {
+    if (!channel) {
       await interaction.reply("You are not in a server");
       return;
     }
 
-    const key = `quiz:${guild.id}:${channel.id}`;
+    const key = `quiz:${user.id}:${channel.id}`;
 
     await interaction.deferReply();
 
@@ -56,11 +54,13 @@ export const quiz = {
 
     const anilistUser = await getAnilistUser(prisma, user);
     if (!anilistUser) {
-      await interaction.editReply("Please run the ``/anilist`` to register");
+      await interaction.editReply(
+        "Please run the ``/register`` in dm to register your list",
+      );
       return;
     }
 
-    const malIds = anilistUser.animeId;
+    const malIds = anilistUser.animes.flatMap((status) => status.malId).flat();
     const index = RANDOM.next() % malIds.length;
     const malId = malIds[index]!;
 

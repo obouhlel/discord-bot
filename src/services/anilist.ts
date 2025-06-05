@@ -1,7 +1,9 @@
+import type { AnimeStatus, AnimeStatusId } from "types/anime-status";
 import type {
   Body,
   UserAnilistRaw,
-  MediaListRaw,
+  AnimeListRaw,
+  UserAnilist,
 } from "types/responses/anilist";
 
 export default class AnilistService {
@@ -30,13 +32,19 @@ export default class AnilistService {
     }
   }
 
-  public async getUser(name: string): Promise<UserAnilistRaw | null> {
+  public async getUser(name: string): Promise<UserAnilist | null> {
     const query = `
       query Query($name: String) {
         User(name: $name) {
           id
           name
           siteUrl
+          avatar {
+            large
+          }
+          options {
+            profileColor
+          }
         }
       }
     `;
@@ -46,10 +54,16 @@ export default class AnilistService {
       variables: { name: name },
     };
 
-    return (await this._requestAnilistApi(body)) as UserAnilistRaw | null;
+    const data = (await this._requestAnilistApi(body)) as UserAnilistRaw | null;
+    if (!data) return null;
+
+    return data.data.User;
   }
 
-  public async getMalIds(id: number, name: string): Promise<number[] | null> {
+  public async getMalIds(
+    id: number,
+    name: string,
+  ): Promise<AnimeStatusId[] | null> {
     const query = `
     query MediaListCollection($userId: Int, $userName: String) {
       MediaListCollection(userId: $userId, userName: $userName, type: ANIME) {
@@ -75,10 +89,39 @@ export default class AnilistService {
       },
     };
 
-    const data = (await this._requestAnilistApi(body)) as MediaListRaw | null;
+    const data = (await this._requestAnilistApi(body)) as AnimeListRaw | null;
     if (!data) return null;
-    console.log(data);
+    const lists = data.data.MediaListCollection.lists.filter(
+      (list) => !list.name.toLowerCase().includes("music"),
+    );
 
-    return [];
+    const statuses: AnimeStatus[] = [
+      "CURRENT",
+      "COMPLETED",
+      "PAUSED",
+      "DROPPED",
+      "PLANNING",
+    ];
+
+    const extractIds = (status: AnimeStatus) =>
+      lists
+        .filter((list) => list.status === status)
+        .flatMap((list) =>
+          list.entries
+            .filter((entry) => !entry.media.isAdult)
+            .map((entry) => entry.media.idMal)
+            .filter((id) => id !== null),
+        );
+
+    const animes = new Array<AnimeStatusId>();
+
+    for (const status of statuses) {
+      animes.push({
+        name: status,
+        malId: extractIds(status),
+      });
+    }
+
+    return animes;
   }
 }

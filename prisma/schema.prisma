@@ -16,27 +16,23 @@ datasource db {
 }
 
 model User {
-  id              Int            @id @default(autoincrement())
-  name            String
-  username        String         @unique
-  email           String?        @unique
-  discordId       String         @unique
-  mediaListUserId Int?           @unique
-  mediaListUser   AnimeListUser? @relation(fields: [mediaListUserId], references: [id])
-  avatarId        String
-  scores          QuizScore[]
-  tokens          Token[]
+  id            Int            @id @default(autoincrement())
+  name          String
+  username      String         @unique
+  email         String?        @unique
+  discordId     String         @unique
+  animeListUser AnimeListUser?
+  avatarId      String
+  scores        QuizScore[]
+  tokens        Token[]
 }
 
 model QuizScore {
   id        Int    @id @default(autoincrement())
-  discordId String
-  guildId   String
+  discordId String @unique
   scores    Int    @default(0)
-  userId    Int?
-  User      User?  @relation(fields: [userId], references: [id])
-
-  @@unique([discordId, guildId])
+  User      User   @relation(fields: [userId], references: [id])
+  userId    Int
 }
 
 enum List {
@@ -44,20 +40,31 @@ enum List {
   MAL
 }
 
+enum AnimeStatus {
+  CURRENT
+  COMPLETED
+  PAUSED
+  DROPPED
+  PLANNING
+}
+
 model AnimeListUser {
   id       Int           @id @default(autoincrement())
   type     List
-  userId   Int
+  typeId   Int
   username String
+  status   AnimeStatus[]
   animes   MediaStatus[]
-  user     User?         @relation
+  user     User          @relation(fields: [userId], references: [id])
+  userId   Int           @unique
 }
 
 model MediaStatus {
-  id              Int            @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
+  name            AnimeStatus
   malId           Int[]
-  AnimeListUser   AnimeListUser? @relation(fields: [animeListUserId], references: [id])
-  animeListUserId Int?
+  AnimeListUser   AnimeListUser @relation(fields: [animeListUserId], references: [id])
+  animeListUserId Int
 }
 
 enum Provider {
@@ -72,6 +79,6 @@ model Token {
   expiresIn    Int
   refreshToken String
   scope        String
-  User         User?    @relation(fields: [userId], references: [id])
-  userId       Int?
+  User         User     @relation(fields: [userId], references: [id])
+  userId       Int
 }
