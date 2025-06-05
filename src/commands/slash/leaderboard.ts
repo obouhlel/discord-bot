@@ -1,6 +1,7 @@
 import {
   ApplicationIntegrationType,
   EmbedBuilder,
+  InteractionContextType,
   SlashCommandBuilder,
 } from "discord.js";
 import type { ChatInputCommandInteraction } from "discord.js";
@@ -10,25 +11,19 @@ export const leaderboard = {
   data: new SlashCommandBuilder()
     .setName("leaderboard")
     .setDescription("The top 5 in the server")
-    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall]),
+    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
+    .setContexts([InteractionContextType.BotDM]),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const { prisma } = interaction.client as CustomDiscordClient;
-    const guild = interaction.guild;
-
-    if (!guild) {
-      await interaction.reply("You are not in a server");
-      return;
-    }
 
     const topScores = await prisma.quizScore.findMany({
-      where: { guildId: guild.id },
       orderBy: { scores: "desc" },
       take: 5,
     });
 
     if (topScores.length === 0) {
-      await interaction.reply("There are no scores in this server yet.");
+      await interaction.reply("There are no scores.");
       return;
     }
 
