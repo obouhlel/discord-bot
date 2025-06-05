@@ -8,7 +8,6 @@ import {
   ApplicationIntegrationType,
   InteractionContextType,
   SlashCommandBuilder,
-  EmbedBuilder,
 } from "discord.js";
 import type CustomDiscordClient from "types/custom-discord-client";
 import { getAnilistUser } from "utils/database/get-anilist-user";
@@ -80,31 +79,8 @@ export const quiz = {
       return;
     }
 
-    const content = [
-      `# Anime Quiz`,
-      `- Using <@!${user.id}>'s AniList`,
-      `- Active in <#${channel.id}>`,
-      `- Guess the anime title`,
-      "- **Answer Requirements:**",
-      `  - No need to include season or part`,
-      `    - Example: \`Attack on Titan season 3 part 2\` or \`Attack on Titan 2\``,
-      "  - You can write only the name before `:` of `!!`:",
-      `     - Example: ~~\`Hakyuu!! To the top\`~~ \`Haikyuu\` or ~~\`Magi: The Labyrinth of Magic\`~~ \`Magi\``,
-      `  - Short titles (3 words or less): 100% match`,
-      "  - Long titles (more than 3 words):",
-      `    - Over 30 chars: 25% word match`,
-      `    - Under 30 chars: 33% word match`,
-      "- **Commands:**",
-      "  - `!hint` for a hint",
-      "  - `!skip` to skip current quiz",
-      "- You start with 5 points, and some hints will consume points",
-      `- Duration: **1 minute**`,
-    ].join("\n");
-
-    const embed = new EmbedBuilder()
-      .setColor("Random")
-      .setTitle(data.getCharater().name)
-      .setImage(data.getCharater().image);
+    const content = data.getContent(user.id, channel.id);
+    const embed = data.getQuizEmbed();
 
     await interaction.editReply({ content: content, embeds: [embed] });
     await data.start(key);

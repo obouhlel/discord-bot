@@ -104,6 +104,36 @@ export class QuizManager {
     return this._data.score;
   }
 
+  public getContent(userId: string, channelId: string): string {
+    return [
+      `# Anime Quiz`,
+      `- Using <@!${userId}>'s AniList`,
+      `- Active in <#${channelId}>`,
+      `- Guess the anime title`,
+      "- **Answer Requirements:**",
+      `  - No need to include season or part`,
+      `    - Example: \`Attack on Titan season 3 part 2\` or \`Attack on Titan 2\``,
+      "  - You can write only the name before `:` of `!!`:",
+      `     - Example: ~~\`Hakyuu!! To the top\`~~ \`Haikyuu\` or ~~\`Magi: The Labyrinth of Magic\`~~ \`Magi\``,
+      `  - Short titles (3 words or less): 100% match`,
+      "  - Long titles (more than 3 words):",
+      `    - Over 30 chars: 25% word match`,
+      `    - Under 30 chars: 33% word match`,
+      "- **Commands:**",
+      "  - `!hint` for a hint",
+      "  - `!skip` to skip current quiz",
+      "- You start with 5 points, and some hints will consume points",
+      `- Duration: **1 minute**`,
+    ].join("\n");
+  }
+
+  public getQuizEmbed() {
+    return new EmbedBuilder()
+      .setColor("Random")
+      .setTitle(this._data.character.name)
+      .setImage(this._data.character.image);
+  }
+
   // PRIVATE
 
   private _getHintValue(hint: keyof QuizHint): QuizHintType {
