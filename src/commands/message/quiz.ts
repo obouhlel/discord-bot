@@ -68,6 +68,7 @@ export default class Quiz extends MessageCommand {
           .setDescription(
             `Success! <@${user.id}> +${quiz.getScore().toString()} point!`,
           )
+          .setImage(quiz.getHints().cover)
           .setURL(quiz.getUrl());
 
         await channel.send({ embeds: [embed] });

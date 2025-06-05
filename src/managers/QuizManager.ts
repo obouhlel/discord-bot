@@ -266,6 +266,7 @@ export class QuizManager {
       .setColor("White")
       .setTitle(this.getTitle())
       .setDescription("⏰ Time's up! The quiz has ended.")
+      .setImage(this._data.hint.cover)
       .setURL(this.getUrl());
 
     this._timeouts.delete(key + ":end");
@@ -330,6 +331,7 @@ export class QuizManager {
       .setColor("Red")
       .setTitle(title)
       .setDescription(`You gave up on this character.`)
+      .setImage(this._data.hint.cover)
       .setURL(url);
 
     await this._channel.send({ embeds: [embed] });
