@@ -36,7 +36,7 @@ export const quiz = {
     const channel: TextBasedChannel | null = interaction.channel;
 
     if (!channel) {
-      await interaction.reply("You are not in a server");
+      await interaction.reply("I cannot interact with this channel.");
       return;
     }
 
