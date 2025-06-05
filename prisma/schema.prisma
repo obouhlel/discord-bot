@@ -16,16 +16,16 @@ datasource db {
 }
 
 model User {
-  id            Int          @id @default(autoincrement())
-  name          String
-  username      String       @unique
-  email         String?      @unique
-  discordId     String       @unique
-  anilistUserId Int?         @unique
-  anilist       AnilistUser? @relation(fields: [anilistUserId], references: [id])
-  avatarId      String
-  scores        QuizScore[]
-  tokens        Token[]
+  id              Int            @id @default(autoincrement())
+  name            String
+  username        String         @unique
+  email           String?        @unique
+  discordId       String         @unique
+  mediaListUserId Int?           @unique
+  mediaListUser   AnimeListUser? @relation(fields: [mediaListUserId], references: [id])
+  avatarId        String
+  scores          QuizScore[]
+  tokens          Token[]
 }
 
 model QuizScore {
@@ -39,13 +39,25 @@ model QuizScore {
   @@unique([discordId, guildId])
 }
 
-model AnilistUser {
-  id          Int    @id @default(autoincrement())
-  anilistId   Int
-  anilistName String
-  animeId     Int[]
-  mangaId     Int[]
-  user        User?  @relation
+enum List {
+  ANILIST
+  MAL
+}
+
+model AnimeListUser {
+  id       Int           @id @default(autoincrement())
+  type     List
+  userId   Int
+  username String
+  animes   MediaStatus[]
+  user     User?         @relation
+}
+
+model MediaStatus {
+  id              Int            @id @default(autoincrement())
+  malId           Int[]
+  AnimeListUser   AnimeListUser? @relation(fields: [animeListUserId], references: [id])
+  animeListUserId Int?
 }
 
 enum Provider {

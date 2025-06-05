@@ -8,7 +8,6 @@ import type {
 } from "discord.js";
 import {
   ApplicationIntegrationType,
-  InteractionContextType,
   SlashCommandBuilder,
   EmbedBuilder,
 } from "discord.js";
@@ -37,8 +36,7 @@ export const quiz = {
           { name: "Manga", value: "manga" },
         ),
     )
-    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
-    .setContexts([InteractionContextType.Guild]),
+    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall]),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const client = interaction.client as CustomDiscordClient;
