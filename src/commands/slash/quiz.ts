@@ -39,7 +39,7 @@ export const quiz = {
 
     await interaction.deferReply();
 
-    const keys = await redis.keys(key);
+    const keys = await redis.keys(`quiz:*:${channel.id}`);
     if (keys.length >= 1) {
       await interaction.editReply(
         `A quiz is already running in <#${channel.id}>`,
