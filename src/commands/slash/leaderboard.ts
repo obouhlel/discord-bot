@@ -1,7 +1,6 @@
 import {
   ApplicationIntegrationType,
   EmbedBuilder,
-  InteractionContextType,
   SlashCommandBuilder,
 } from "discord.js";
 import type { ChatInputCommandInteraction } from "discord.js";
@@ -11,8 +10,7 @@ export const leaderboard = {
   data: new SlashCommandBuilder()
     .setName("leaderboard")
     .setDescription("The top 5 in the server")
-    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
-    .setContexts([InteractionContextType.Guild]),
+    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall]),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const { prisma } = interaction.client as CustomDiscordClient;
