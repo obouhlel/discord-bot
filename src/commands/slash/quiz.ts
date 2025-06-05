@@ -66,7 +66,7 @@ export const quiz = {
     }
 
     const malIds = anilistUser.animes.flatMap((status) => status.malId).flat();
-    const index = RANDOM.next() % malIds.length;
+    const index = (RANDOM.next() * RANDOM.next()) % malIds.length;
     const malId = malIds[index]!;
 
     const data = await buildQuizDataManager(
