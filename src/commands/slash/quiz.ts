@@ -43,9 +43,10 @@ export const quiz = {
 
     await interaction.reply({
       content: "The quiz will be sent...",
-      flags: ["Ephemeral"],
+      flags: "Ephemeral",
     });
 
+    await interaction.editReply("Check if the quiz is already running...");
     const keys = await redis.keys(`quiz:*:${channel.id}`);
     if (keys.length >= 1) {
       await interaction.editReply(
@@ -59,6 +60,7 @@ export const quiz = {
       return;
     }
 
+    await interaction.editReply("Get MAL/Anilist user...");
     const animeListUser = await getAnimeListUser(prisma, user);
     if (!animeListUser) {
       await interaction.editReply(
@@ -79,21 +81,22 @@ export const quiz = {
       return;
     }
 
-    let data = null;
+    await interaction.editReply("Get the random anime");
+    const random =
+      malIds.length > 100 ? RANDOM.next() * RANDOM.next() : RANDOM.next();
+    const index = random % malIds.length;
+    const malId = malIds[index]!;
 
-    do {
-      const random =
-        malIds.length > 100 ? RANDOM.next() * RANDOM.next() : RANDOM.next();
-      const index = random % malIds.length;
-      const malId = malIds[index]!;
-
-      data = await buildQuizDataManager(
-        malId,
-        redis,
-        timeouts,
-        channel as TextChannel,
-      );
-    } while (!data);
+    const data = await buildQuizDataManager(
+      malId,
+      redis,
+      timeouts,
+      channel as TextChannel,
+    );
+    if (!data) {
+      await interaction.editReply("Please retry the commands");
+      return;
+    }
 
     const embed = data.getQuizEmbed();
 
