@@ -10,7 +10,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import type CustomDiscordClient from "types/custom-discord-client";
-import { getAnimeListUser } from "utils/database/get-anilist-user";
+import { getAnimeListUser } from "utils/database/get-animes-list-user";
 import { buildQuizDataManager } from "utils/builders/quiz";
 import Random from "utils/random";
 
