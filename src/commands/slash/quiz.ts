@@ -10,7 +10,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import type CustomDiscordClient from "types/custom-discord-client";
-import { getAnilistUser } from "utils/database/get-anilist-user";
+import { getAnimeListUser } from "utils/database/get-anilist-user";
 import { buildQuizDataManager } from "utils/builders/quiz";
 import Random from "utils/random";
 
@@ -59,16 +59,29 @@ export const quiz = {
       return;
     }
 
-    const anilistUser = await getAnilistUser(prisma, user);
-    if (!anilistUser) {
+    const animeListUser = await getAnimeListUser(prisma, user);
+    if (!animeListUser) {
       await interaction.editReply(
         "Please run the `/register` command in DM to register your anime list",
       );
       return;
     }
 
-    const malIds = anilistUser.animes.flatMap((status) => status.malId).flat();
-    const index = (RANDOM.next() * RANDOM.next()) % malIds.length;
+    const status = animeListUser.status;
+    const malIds = animeListUser.animes
+      .filter((media) => status.includes(media.name))
+      .flatMap((status) => status.malId)
+      .flat();
+    if (malIds.length === 0) {
+      await interaction.editReply(
+        "Your list is empty please do `/register` or `/filter` commands",
+      );
+      return;
+    }
+    console.log(malIds.length);
+    const random =
+      malIds.length > 100 ? RANDOM.next() * RANDOM.next() : RANDOM.next();
+    const index = random % malIds.length;
     const malId = malIds[index]!;
 
     const data = await buildQuizDataManager(
