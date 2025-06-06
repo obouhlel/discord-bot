@@ -78,22 +78,22 @@ export const quiz = {
       );
       return;
     }
-    console.log(malIds.length);
-    const random =
-      malIds.length > 100 ? RANDOM.next() * RANDOM.next() : RANDOM.next();
-    const index = random % malIds.length;
-    const malId = malIds[index]!;
 
-    const data = await buildQuizDataManager(
-      malId,
-      redis,
-      timeouts,
-      channel as TextChannel,
-    );
-    if (!data) {
-      await interaction.editReply(`Anime character not found`);
-      return;
-    }
+    let data = null;
+
+    do {
+      const random =
+        malIds.length > 100 ? RANDOM.next() * RANDOM.next() : RANDOM.next();
+      const index = random % malIds.length;
+      const malId = malIds[index]!;
+
+      data = await buildQuizDataManager(
+        malId,
+        redis,
+        timeouts,
+        channel as TextChannel,
+      );
+    } while (!data);
 
     const embed = data.getQuizEmbed();
 
