@@ -77,7 +77,7 @@ export async function buildQuizDataManager(
 
   const charactersData = await fetchCharacters(id);
   const characters = charactersData.filter(
-    (data) => !data.character.images.jpg.image_url.startsWith(UNKNOWN),
+    (data) => !data.character.images.webp.image_url.startsWith(UNKNOWN),
   );
   const selectedCharacter = selectRandomCharacter(characters);
   if (!selectedCharacter) return null;
@@ -86,7 +86,7 @@ export async function buildQuizDataManager(
   const characterInfo = {
     id: characterId,
     name: selectedCharacter.character.name,
-    image: selectedCharacter.character.images.jpg.image_url,
+    image: selectedCharacter.character.images.webp.image_url,
   };
 
   const mediaInfo = extractMediaInfo(mediaData);

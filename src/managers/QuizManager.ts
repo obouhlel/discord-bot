@@ -228,7 +228,7 @@ export class QuizManager {
   private _cleanTitle(title: string): string {
     let newTitle: string | undefined = title.toLowerCase() as string;
     const season =
-      /\d+(st|nd|rd|th)?\s+season\s+\d*(st|nd|rd|th)?|part\s+\d+(st|nd|rd|th)?\s*|ova|ona|(the)?\s+movie\s*\d*|\d+$/gi;
+      /\d*(st|nd|rd|th)?\s*season\s*\d*(st|nd|rd|th)?|part\s+\d+(st|nd|rd|th)?|ova|ona|(the)?\s*movie\s*\d*|\d+$/gi;
     const regexMap = new Map([
       [/^.{4,}:/g, ":"],
       [/^\w+!!/g, "!!"],
