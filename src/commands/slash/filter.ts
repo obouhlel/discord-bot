@@ -54,10 +54,10 @@ export const filter = {
       .setMinValues(1)
       .setMaxValues(status.length)
       .addOptions(
-        status.map((s, index) => ({
-          label: capitalize(s.toLowerCase()),
+        status.map((s) => ({
+          label: capitalize(s),
           value: s,
-          default: statusUser[index] === s,
+          default: statusUser.includes(s),
         })),
       );
 

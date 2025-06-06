@@ -9,36 +9,14 @@ export async function interactionCreate(
   interaction: Interaction,
   commands: Map<string, SlashCommand>,
 ): Promise<void> {
-  // Change this block after
   if (interaction.isAnySelectMenu()) {
-    if (interaction.customId.startsWith("filter")) {
-      const command = commands.get("filter") as
-        | {
-            update: (interaction: AnySelectMenuInteraction) => Promise<void>;
-          }
-        | undefined;
-      if (!command) return;
-      try {
-        await command.update(interaction);
-      } catch (error) {
-        console.error(error);
-      }
-    }
+    await InteractionAnySelectMenu(interaction, commands);
+    return;
   }
   if (interaction.isButton()) {
-    if (interaction.customId.startsWith("register")) {
-      const command = commands.get("register") as
-        | { anilist: (interaction: ButtonInteraction) => Promise<void> }
-        | undefined;
-      if (!command) return;
-      try {
-        await command.anilist(interaction);
-      } catch (error) {
-        console.error(error);
-      }
-    }
+    await InteractionButton(interaction, commands);
+    return;
   }
-  //
   if (!interaction.isChatInputCommand()) return;
   const command = commands.get(interaction.commandName);
   if (!command) {
@@ -53,6 +31,44 @@ export async function interactionCreate(
       await interaction.editReply(`${command.data.name} an error occured`);
     } else {
       await interaction.reply(`${command.data.name} an error occured`);
+    }
+  }
+}
+
+// TODO: Update the structure of the function
+
+async function InteractionAnySelectMenu(
+  interaction: AnySelectMenuInteraction,
+  commands: Map<string, SlashCommand>,
+) {
+  if (interaction.customId.startsWith("filter")) {
+    const command = commands.get("filter") as
+      | {
+          update: (interaction: AnySelectMenuInteraction) => Promise<void>;
+        }
+      | undefined;
+    if (!command) return;
+    try {
+      await command.update(interaction);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+}
+
+async function InteractionButton(
+  interaction: ButtonInteraction,
+  commands: Map<string, SlashCommand>,
+) {
+  if (interaction.customId.startsWith("register")) {
+    const command = commands.get("register") as
+      | { anilist: (interaction: ButtonInteraction) => Promise<void> }
+      | undefined;
+    if (!command) return;
+    try {
+      await command.anilist(interaction);
+    } catch (error) {
+      console.error(error);
     }
   }
 }
