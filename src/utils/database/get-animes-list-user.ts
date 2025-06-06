@@ -5,7 +5,7 @@ type AnimeListUserWithAnimes = Prisma.AnimeListUserGetPayload<{
   include: { animes: true };
 }>;
 
-export async function getAnilistUser(
+export async function getAnimeListUser(
   prisma: PrismaClient,
   user: User,
 ): Promise<AnimeListUserWithAnimes | null> {

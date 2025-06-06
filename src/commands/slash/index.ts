@@ -6,3 +6,4 @@ export { register } from "./register";
 export { quiz } from "./quiz";
 export { score } from "./score";
 export { leaderboard } from "./leaderboard";
+export { filter } from "./filter";
