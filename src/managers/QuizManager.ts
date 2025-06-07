@@ -324,11 +324,6 @@ export class QuizManager {
 
   // check the answer (already in lowercase)
   public checkTitles(answer: string): boolean {
-    console.info(
-      `Checking answer: ${answer}`,
-      this._data.titles.map((t) => t.title),
-    );
-
     const test = (anwser: string, titles: string[]): boolean => {
       if (titles.length === 0) return true;
 
