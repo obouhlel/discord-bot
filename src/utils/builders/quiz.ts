@@ -7,11 +7,9 @@ import type {
   CharacterResponse,
 } from "types/responses/jikan/characters";
 import { QuizManager } from "managers/QuizManager";
-import Random from "utils/random";
 
 const API_URL = "https://api.jikan.moe/v4";
 const UNKNOWN = "https://cdn.myanimelist.net/images/questionmark_23.gif";
-const RANDOM = new Random();
 
 async function requestGet(url: string): Promise<unknown> {
   const response = await fetch(url);
@@ -37,7 +35,7 @@ async function fetchCharacters(id: number): Promise<Character[]> {
 
 function selectRandomCharacter(characters: Character[]): Character | null {
   if (characters.length === 0) return null;
-  const random = RANDOM.next() % characters.length;
+  const random = Math.floor(Math.random() * (characters.length - 1));
   return characters[random]!;
 }
 

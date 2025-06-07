@@ -431,7 +431,11 @@ export class QuizManager {
       .setImage(this._data.hint.cover)
       .setURL(url);
 
-    await this._channel.send({ embeds: [embed] });
+    const titles = this.getTitles()
+      .map((title) => `- **${title.type}**: ${title.title}`)
+      .join("\n");
+
+    await this._channel.send({ content: titles, embeds: [embed] });
   }
 
   // commands cheat

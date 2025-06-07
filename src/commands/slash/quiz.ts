@@ -12,9 +12,6 @@ import {
 import type CustomDiscordClient from "types/custom-discord-client";
 import { getAnimeListUser } from "utils/database/get-animes-list-user";
 import { buildQuizDataManager } from "utils/builders/quiz";
-import Random from "utils/random";
-
-const RANDOM = new Random();
 
 export const quiz = {
   data: new SlashCommandBuilder()
@@ -81,8 +78,7 @@ export const quiz = {
     }
 
     await interaction.editReply("Get the random anime");
-    const random =
-      malIds.length > 100 ? RANDOM.next() * RANDOM.next() : RANDOM.next();
+    const random = Math.floor(Math.random() * (malIds.length - 1));
     const index = random % malIds.length;
     const malId = malIds[index]!;
 
