@@ -360,32 +360,32 @@ export class QuizManager {
           ) as number[][];
 
           for (let i = 0; i < rows; i++) {
-            // @ts-ignore
+            // @ts-expect-error Could not find a way to type this correctly
             matrix[i][0] = i;
           }
           for (let j = 0; j < cols; j++) {
-            // @ts-ignore
+            // @ts-expect-error Could not find a way to type this correctly
             matrix[0][j] = j;
           }
 
           for (let i = 1; i < rows; i++) {
             for (let j = 1; j < cols; j++) {
               const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-              // @ts-ignore
+              // @ts-expect-error Could not find a way to type this correctly
               matrix[i][j] = Math.min(
-                // @ts-ignore
-                matrix[i - 1][j] + 1,
-                // @ts-ignore
-                matrix[i][j - 1] + 1,
-                // @ts-ignore
-                matrix[i - 1][j - 1] + cost,
+                // @ts-expect-error Could not find a way to type this correctly
+                (matrix[i - 1][j] ?? Infinity) + 1,
+                // @ts-expect-error Could not find a way to type this correctly
+                (matrix[i][j - 1] ?? Infinity) + 1,
+                // @ts-expect-error Could not find a way to type this correctly
+                (matrix[i - 1][j - 1] ?? Infinity) + cost,
               );
             }
           }
 
-          // @ts-ignore
+          // @ts-expect-error Could not find a way to type this correctly
           const distance = matrix[a.length][b.length];
-          // @ts-ignore
+          // @ts-expect-error Could not find a way to type this correctly
           return distance <= numberOfMistakesPossible;
         };
 
