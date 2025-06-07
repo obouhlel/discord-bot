@@ -227,8 +227,26 @@ export class QuizManager {
   // Check title
   private _cleanTitle(title: string): string {
     let newTitle: string | undefined = title.toLowerCase() as string;
-    const season =
-      /\d*(st|nd|rd|th)?\s*season\s*\d*(st|nd|rd|th)?|part\s+\d+(st|nd|rd|th)?|ova|ona|(the)?\s*movie\s*\d*|\d+$/gi;
+    const season = new RegExp(
+      [
+        // Saison sous forme : "2nd season", "season II", etc.
+        String.raw`\d*(st|nd|rd|th)?\s*season\s*(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
+
+        // Partie : "part 2", "part IV", etc.
+        String.raw`part\s+(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
+
+        // OVA ou ONA
+        String.raw`ova`,
+        String.raw`ona`,
+
+        // Film : "the movie", "movie 2", "the movie III"
+        String.raw`(the)?\s*movie\s*(\d+|[ivxlcdm]+)?`,
+
+        // Finir par un chiffre ou un nombre romain : "Naruto 2", "Bleach VI"
+        String.raw`(\d+|[ivxlcdm]+)$`,
+      ].join("|"),
+      "gi",
+    );
     const regexMap = new Map([
       [/^.{4,}:/g, ":"],
       [/^\w+!!/g, "!!"],
@@ -244,7 +262,9 @@ export class QuizManager {
       newTitle = newTitle!.split(season).join(" ");
     }
 
-    return newTitle ?? title;
+    return (newTitle ?? title)
+      .replace(/\s+/g, "") // retire les espaces
+      .replace(/[^\p{L}\p{N}]/gu, ""); // retire tout sauf lettres et chiffres;
   }
 
   private _matchPercentage(answer: string, title: string): boolean {
@@ -302,15 +322,96 @@ export class QuizManager {
     await this._channel.send({ embeds: [embed] });
   }
 
-  // check the answer
+  // check the answer (already in lowercase)
   public checkTitles(answer: string): boolean {
-    return this._data.titles.some((title) => {
-      return (
-        answer === title.title.toLowerCase() ||
-        this._matchPercentage(answer, title.title) ||
-        answer === this._cleanTitle(title.title)
-      );
-    });
+    console.info(
+      `Checking answer: ${answer}`,
+      this._data.titles.map((t) => t.title),
+    );
+
+    const test = (anwser: string, titles: string[]): boolean => {
+      if (titles.length === 0) return true;
+
+      return titles.some((title) => {
+        // console.info('Checking title:', title);
+
+        const titleCleaned = this._cleanTitle(title!);
+        const answerCleaned = this._cleanTitle(anwser);
+
+        // check if anwser match, even if anagram ("chien" === "niche" ✅ true)
+        const answerSorted = answerCleaned.split("").sort().join("");
+        const titleSorted = titleCleaned.split("").sort().join("");
+
+        const regexReplaceNonAsciiToSpace = /[^\p{L}\p{N}]/gu;
+        const numberOfWordsInTitle = title
+          .replace(regexReplaceNonAsciiToSpace, " ")
+          .trim()
+          .split(/\s+/).length;
+
+        /** @see https://fr.wikipedia.org/wiki/Distance_de_Levenshtein */
+        const matchAnswerWithLevenshteinDistance = (
+          answer: string,
+          title: string,
+          numberOfMistakesPossible: number,
+        ): boolean => {
+          const a = answer.toLowerCase().trim();
+          const b = title.toLowerCase().trim();
+
+          const rows = a.length + 1;
+          const cols = b.length + 1;
+
+          const matrix = Array.from({ length: rows }, () =>
+            new Array<number>(cols).fill(0),
+          ) as number[][];
+
+          for (let i = 0; i < rows; i++) {
+            // @ts-ignore
+            matrix[i][0] = i;
+          }
+          for (let j = 0; j < cols; j++) {
+            // @ts-ignore
+            matrix[0][j] = j;
+          }
+
+          for (let i = 1; i < rows; i++) {
+            for (let j = 1; j < cols; j++) {
+              const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+              // @ts-ignore
+              matrix[i][j] = Math.min(
+                // @ts-ignore
+                matrix[i - 1][j] + 1,
+                // @ts-ignore
+                matrix[i][j - 1] + 1,
+                // @ts-ignore
+                matrix[i - 1][j - 1] + cost,
+              );
+            }
+          }
+
+          // @ts-ignore
+          const distance = matrix[a.length][b.length];
+          // @ts-ignore
+          return distance <= numberOfMistakesPossible;
+        };
+
+        const answerMatch = answerSorted === titleSorted;
+        const answerMatchWithMistake = matchAnswerWithLevenshteinDistance(
+          answerCleaned,
+          titleCleaned,
+          numberOfWordsInTitle - 1,
+        );
+
+        // console.info(`answerCorrect ? : ${answerMatch ? 'true' : 'false'}`);
+        // console.info(`matchPercentage ? : ${answerMatchWithMistake ? 'true' : 'false'}`);
+
+        return answerMatch || answerMatchWithMistake;
+      });
+    };
+
+    return test(
+      answer,
+      this._data.titles.map((t) => t.title),
+    );
   }
 
   // commands hint management

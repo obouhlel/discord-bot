@@ -1,7 +1,7 @@
 declare module "bun" {
   interface Env {
     NODE_ENV?: string;
-    USERNAME: string;
+    USERNAME: string; // ça prend le username du User windows sur windows (pas celui du .env)
     PASSWORD: string;
     CLIENT_ID: string;
     CLIENT_SECRET: string;

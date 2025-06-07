@@ -58,6 +58,7 @@ export default async function routes(fastify: FastifyInstance) {
   });
 
   // Update command with token if it's not in localhost
+  // Pourquoi on ne lance pas updateCommands au démarrage ?
   fastify.put(
     "/commands/update",
     {
