@@ -52,9 +52,6 @@ export class QuizManager {
       this._handlerCharacter(key, value as QuizCharacters[]),
   };
 
-  private readonly _regex: RegExp =
-    /[\s!~?.,"''\-_:;()[\]{}<>/\\|@#$%^&*+=×♀`©®™✓•]/;
-
   constructor(
     data: QuizData | string,
     redis: RedisClient,
@@ -113,10 +110,6 @@ export class QuizManager {
       `    - Example: \`Attack on Titan season 3 part 2\` or \`Attack on Titan 2\``,
       "  - You can write only the name before `:` of `!!`:",
       `     - Example: ~~\`Hakyuu!! To the top\`~~ \`Haikyuu\` or ~~\`Magi: The Labyrinth of Magic\`~~ \`Magi\``,
-      `  - Short titles (3 words or less): 100% match`,
-      "  - Long titles (more than 3 words):",
-      `    - Over 30 chars: 25% word match`,
-      `    - Under 30 chars: 33% word match`,
       "- **Commands:**",
       "  - `!hint` for a hint",
       "  - `!skip` to skip current quiz",
@@ -231,17 +224,13 @@ export class QuizManager {
       [
         // Saison sous forme : "2nd season", "season II", etc.
         String.raw`\d*(st|nd|rd|th)?\s*season\s*(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
-
         // Partie : "part 2", "part IV", etc.
         String.raw`part\s+(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
-
         // OVA ou ONA
         String.raw`ova`,
         String.raw`ona`,
-
         // Film : "the movie", "movie 2", "the movie III"
         String.raw`(the)?\s*movie\s*(\d+|[ivxlcdm]+)?`,
-
         // Finir par un chiffre ou un nombre romain : "Naruto 2", "Bleach VI"
         String.raw`(\d+|[ivxlcdm]+)$`,
       ].join("|"),
@@ -263,24 +252,8 @@ export class QuizManager {
     }
 
     return (newTitle ?? title)
-      .replace(/\s+/g, "") // retire les espaces
-      .replace(/[^\p{L}\p{N}]/gu, ""); // retire tout sauf lettres et chiffres;
-  }
-
-  private _matchPercentage(answer: string, title: string): boolean {
-    const answerWords = answer.toLowerCase().split(this._regex).filter(Boolean);
-    const titleWords = title.toLowerCase().split(this._regex).filter(Boolean);
-    const matchCount = titleWords.filter((word) =>
-      answerWords.includes(word),
-    ).length;
-    if (titleWords.length <= 3) {
-      const threshold = 100;
-      const percentage = Math.floor((matchCount / titleWords.length) * 100);
-      return percentage >= threshold;
-    }
-    const threshold = title.length > 30 ? 25 : 33;
-    const percentage = Math.floor((matchCount / titleWords.length) * 100);
-    return percentage >= threshold;
+      .replace(/\s+/g, "")
+      .replace(/[^\p{L}\p{N}]/gu, "");
   }
 
   private async _updateData(key: string) {

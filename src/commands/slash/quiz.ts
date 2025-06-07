@@ -42,8 +42,7 @@ export const quiz = {
     const key = `quiz:${user.id}:${channel.id}`;
 
     await interaction.reply({
-      content: "The quiz will be sent...",
-      flags: "Ephemeral",
+      content: `The quiz will be sent by <@${user.id}>...`,
     });
 
     await interaction.editReply("Check if the quiz is already running...");
