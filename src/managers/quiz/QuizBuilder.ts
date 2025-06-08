@@ -95,19 +95,15 @@ export class QuizBuilder {
 
   public async buildQuizData(id: number): Promise<QuizData | null> {
     let mediaData: AnimeResponse | null = null;
-    let selectedCharacter: Character | null = null;
-    let characters: Character[];
     do {
-      do {
-        mediaData = await this.fetchMediaData(id);
-      } while (!mediaData);
-      const charactersData = await this.fetchCharacters(id);
-      characters = charactersData.filter(
-        (data) =>
-          !data.character.images.webp.image_url.startsWith(this.UNKNOWN),
-      );
-      selectedCharacter = this.selectRandomCharacter(characters);
-    } while (selectedCharacter === null);
+      mediaData = await this.fetchMediaData(id);
+    } while (!mediaData);
+    const charactersData = await this.fetchCharacters(id);
+    const characters = charactersData.filter(
+      (data) => !data.character.images.webp.image_url.startsWith(this.UNKNOWN),
+    );
+    const selectedCharacter = this.selectRandomCharacter(characters);
+    if (!selectedCharacter) return null;
 
     const characterId = selectedCharacter.character.mal_id;
     const characterInfo = {
