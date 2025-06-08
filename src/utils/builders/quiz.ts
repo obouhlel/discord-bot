@@ -86,12 +86,7 @@ function extractMediaInfo(media: AnimeResponse) {
   };
 }
 
-export async function buildQuizDataManager(
-  id: number,
-  redis: RedisClient,
-  timeouts: Map<string, NodeJS.Timeout>,
-  channel: TextChannel,
-): Promise<QuizManager | null> {
+export async function buildQuizData(id: number): Promise<QuizData | null> {
   let mediaData: AnimeResponse | null = null;
   do {
     mediaData = await fetchMediaData(id);
@@ -115,7 +110,7 @@ export async function buildQuizDataManager(
   const mediaInfo = extractMediaInfo(mediaData);
   console.log(mediaInfo);
 
-  const data: QuizData = {
+  return {
     character: characterInfo,
     hint: {
       synopsis: mediaInfo.synopsis,
@@ -127,6 +122,15 @@ export async function buildQuizDataManager(
     url: mediaInfo.url,
     score: 5,
   };
+}
 
+export async function buildQuizDataManager(
+  id: number,
+  redis: RedisClient,
+  timeouts: Map<string, NodeJS.Timeout>,
+  channel: TextChannel,
+): Promise<QuizManager | null> {
+  const data: QuizData | null = await buildQuizData(id);
+  if (!data) return null;
   return new QuizManager(data, redis, timeouts, channel);
 }

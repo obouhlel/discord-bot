@@ -29,6 +29,9 @@ jobs:
       - name: Format check (Prettier)
         run: bun run format:check
 
+      - name: Run Test
+        run: bun test
+
   deploy:
     runs-on: ubuntu-latest
     needs: check
