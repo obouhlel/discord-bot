@@ -12,6 +12,7 @@ import {
 import type CustomDiscordClient from "types/custom-discord-client";
 import { getAnimeListUser } from "utils/database/get-animes-list-user";
 import { QuizBuilder } from "managers/quiz/QuizBuilder";
+import { capitalize } from "utils/capitalize";
 
 export const quiz = {
   data: new SlashCommandBuilder()
@@ -96,7 +97,9 @@ export const quiz = {
 
     const embed = data.getQuizEmbed();
 
-    await interaction.editReply("Type `!rules` to see the rules");
+    await interaction.editReply(
+      `# **${capitalize(animeListUser.type)}**: ${animeListUser.username} used\nType \`!rules\` to see the rules`,
+    );
 
     await channel.send({ embeds: [embed] });
     await data.start(key);
