@@ -106,9 +106,7 @@ export async function buildQuizData(id: number): Promise<QuizData | null> {
     image: selectedCharacter.character.images.webp.image_url,
   };
 
-  console.log("Extract info");
   const mediaInfo = extractMediaInfo(mediaData);
-  console.log(mediaInfo);
 
   return {
     character: characterInfo,
