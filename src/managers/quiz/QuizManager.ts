@@ -5,13 +5,14 @@ import type { QuizData, QuizCharacter } from "types/quiz";
 import { EmbedBuilder } from "discord.js";
 import { QuizHintManager } from "./QuizHintManager";
 import { QuizAnswerChecker } from "./QuizAnswerChecker";
+import type { PrismaClient } from "generated/prisma";
 
 export class QuizManager {
   private _data: QuizData;
   private _redis: RedisClient;
+  private _prisma: PrismaClient;
   private _timeouts: Map<string, NodeJS.Timeout>;
   private _channel: TextChannel;
-  private _cheater = new Set(["831543267194568744"]);
   private _min = 1;
 
   private _hintManager: QuizHintManager;
@@ -22,6 +23,7 @@ export class QuizManager {
     redis: RedisClient,
     timeouts: Map<string, NodeJS.Timeout>,
     channel: TextChannel,
+    prisma: PrismaClient,
   ) {
     if (typeof data === "string") {
       this._data = JSON.parse(data) as QuizData;
@@ -29,6 +31,7 @@ export class QuizManager {
       this._data = data;
     }
     this._redis = redis;
+    this._prisma = prisma;
     this._timeouts = timeouts;
     this._channel = channel;
     this._hintManager = new QuizHintManager(
@@ -122,26 +125,6 @@ export class QuizManager {
     this._timeouts.set(key + ":end", endTimeout);
   }
 
-  // timers message
-  private async _closeQuizSession(key: string) {
-    const value = await this._redis.get(key);
-    if (!value) return;
-
-    const embed = new EmbedBuilder()
-      .setColor("White")
-      .setTitle(this.getTitle())
-      .setDescription("⏰ Time's up! The quiz has ended.")
-      .setImage(this._data.hint.cover)
-      .setURL(this.getUrl());
-
-    const embedTitles = this.getTitlesEmbed();
-
-    this._timeouts.delete(key + ":end");
-    await this._redis.del(key);
-    await this._channel.send({ embeds: [embed] });
-    await this._channel.send({ embeds: [embedTitles] });
-  }
-
   public cleanTitle(title: string): string {
     return this._answerChecker.cleanTitle(title);
   }
@@ -155,7 +138,7 @@ export class QuizManager {
   }
 
   public async skip(key: string) {
-    await this.clear(key);
+    await this._clear(key);
     const title = this.getTitle();
     const url = this.getUrl();
 
@@ -173,21 +156,90 @@ export class QuizManager {
   }
 
   public async cheat(user: User) {
-    if (this._cheater.has(user.id)) {
-      await user.send(
-        `Cheat: The answers are:\n${this.getTitles()
-          .map((t) => `- ${t.title}`)
-          .join("\n")}`,
-      );
-    }
+    const embed = this.getTitlesEmbed();
+    await user.send("You lost 5 points.");
+    await user.send({ embeds: [embed] });
+    await this.updateScore(user, -5);
   }
 
-  public async clear(key: string): Promise<void> {
+  public async end(key: string, user: User): Promise<void> {
+    await this._clear(key);
+    const embed = new EmbedBuilder()
+      .setColor("Green")
+      .setTitle(this.getTitle())
+      .setDescription(
+        `Success! <@${user.id}> +${this.getScore().toString()} point!`,
+      )
+      .setImage(this.getHints().cover)
+      .setURL(this.getUrl());
+
+    const embedTitles = this.getTitlesEmbed();
+
+    await this._channel.send({ embeds: [embed] });
+    await this._channel.send({ embeds: [embedTitles] });
+    await this.updateScore(user, this.getScore());
+  }
+
+  public async updateScore(user: User, score: number) {
+    if (!user.globalName || !user.avatar) return;
+    const dbUser = await this._prisma.user.upsert({
+      where: {
+        discordId: user.id,
+      },
+      update: {
+        name: user.globalName,
+        username: user.username,
+        avatarId: user.avatar,
+      },
+      create: {
+        discordId: user.id,
+        name: user.globalName,
+        username: user.username,
+        avatarId: user.avatar,
+      },
+    });
+
+    await this._prisma.quizScore.upsert({
+      where: {
+        userId: dbUser.id,
+        discordId: user.id,
+      },
+      create: {
+        discordId: user.id,
+        scores: score,
+        userId: dbUser.id,
+      },
+      update: {
+        scores: { increment: score },
+      },
+    });
+  }
+
+  private async _clear(key: string) {
     const timeoutEnd = this._timeouts.get(key + ":end");
     if (timeoutEnd) {
       clearTimeout(timeoutEnd);
       this._timeouts.delete(key + ":end");
     }
     await this._redis.del(key);
+  }
+
+  private async _closeQuizSession(key: string) {
+    const value = await this._redis.get(key);
+    if (!value) return;
+
+    const embed = new EmbedBuilder()
+      .setColor("White")
+      .setTitle(this.getTitle())
+      .setDescription("⏰ Time's up! The quiz has ended.")
+      .setImage(this._data.hint.cover)
+      .setURL(this.getUrl());
+
+    const embedTitles = this.getTitlesEmbed();
+
+    this._timeouts.delete(key + ":end");
+    await this._redis.del(key);
+    await this._channel.send({ embeds: [embed] });
+    await this._channel.send({ embeds: [embedTitles] });
   }
 }
