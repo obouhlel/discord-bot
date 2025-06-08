@@ -56,6 +56,7 @@ function formatCharactersList(
 function addCustomTitle(titles: TitleMedia[]): TitleMedia[] {
   const newTitles = [...titles];
   const regexMap = new Map([
+    [/^.{4,},/g, ","],
     [/^.{4,}:/g, ":"],
     [/^\w+!!/g, "!!"],
   ]);
