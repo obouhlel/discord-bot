@@ -1,8 +1,4 @@
-import type {
-  AnySelectMenuInteraction,
-  ButtonInteraction,
-  Interaction,
-} from "discord.js";
+import type { AnySelectMenuInteraction, Interaction } from "discord.js";
 import type { SlashCommand } from "types/commands/slash";
 
 export async function interactionCreate(
@@ -11,10 +7,6 @@ export async function interactionCreate(
 ): Promise<void> {
   if (interaction.isAnySelectMenu()) {
     await InteractionAnySelectMenu(interaction, commands);
-    return;
-  }
-  if (interaction.isButton()) {
-    await InteractionButton(interaction, commands);
     return;
   }
   if (!interaction.isChatInputCommand()) return;
@@ -50,23 +42,6 @@ async function InteractionAnySelectMenu(
     if (!command) return;
     try {
       await command.update(interaction);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-}
-
-async function InteractionButton(
-  interaction: ButtonInteraction,
-  commands: Map<string, SlashCommand>,
-) {
-  if (interaction.customId.startsWith("register")) {
-    const command = commands.get("register") as
-      | { anilist: (interaction: ButtonInteraction) => Promise<void> }
-      | undefined;
-    if (!command) return;
-    try {
-      await command.anilist(interaction);
     } catch (error) {
       console.error(error);
     }
