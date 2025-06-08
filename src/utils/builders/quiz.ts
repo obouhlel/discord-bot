@@ -69,7 +69,12 @@ function addCustomTitle(titles: TitleMedia[]): TitleMedia[] {
         newTitle = newTitle!.split(separator)[0];
       }
     }
-    if (newTitle && !newTitles.some((t) => t.title === newTitle)) {
+    if (
+      newTitle &&
+      !newTitles.some(
+        (t) => t.title.toLocaleLowerCase() === newTitle.toLocaleLowerCase(),
+      )
+    ) {
       newTitles.push({ type: "Custom", title: newTitle });
     }
   }
