@@ -38,6 +38,10 @@ fastify.addHook("onReady", async function () {
     console.log(`✅ | Client is ready ${fastify.discord.client.user.tag}`);
   });
 
+  if (Bun.env.NODE_ENV === "production") {
+    await fastify.discord.updateCommands();
+  }
+
   // New message
   // eslint-disable-next-line
   fastify.discord.client.on(Events.MessageCreate, async (message: Message) => {

@@ -138,7 +138,8 @@ export class QuizManager {
 
     this._timeouts.delete(key + ":end");
     await this._redis.del(key);
-    await this._channel.send({ embeds: [embed, embedTitles] });
+    await this._channel.send({ embeds: [embed] });
+    await this._channel.send({ embeds: [embedTitles] });
   }
 
   public cleanTitle(title: string): string {
@@ -167,7 +168,8 @@ export class QuizManager {
 
     const embedTitles = this.getTitlesEmbed();
 
-    await this._channel.send({ embeds: [embed, embedTitles] });
+    await this._channel.send({ embeds: [embed] });
+    await this._channel.send({ embeds: [embedTitles] });
   }
 
   public async cheat(user: User) {

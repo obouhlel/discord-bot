@@ -7,9 +7,9 @@ import { MessageCommand } from "types/commands/message";
 
 export default class Quiz extends MessageCommand {
   public readonly data = {
-    name: "Quiz Anime/Manga",
+    name: "Anime Quiz with Characters",
     description:
-      "You need to register with /anilist first. After that, use /quiz to start playing.",
+      "First, register with /register in bot DM. Then use /quiz to start playing.",
   };
 
   async shouldExecute({
@@ -77,7 +77,8 @@ export default class Quiz extends MessageCommand {
 
         const embedTitles = quiz.getTitlesEmbed();
 
-        await channel.send({ embeds: [embed, embedTitles] });
+        await channel.send({ embeds: [embed] });
+        await channel.send({ embeds: [embedTitles] });
       }
     }
   }
