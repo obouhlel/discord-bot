@@ -80,7 +80,11 @@ export default class Quiz extends MessageCommand {
           .map((title) => `- **${title.type}**: ${title.title}`)
           .join("\n");
 
-        await channel.send({ content: titles, embeds: [embed] });
+        const embedTitles = new EmbedBuilder()
+          .setTitle("Titles")
+          .setDescription(titles);
+
+        await channel.send({ embeds: [embed, embedTitles] });
       }
     }
   }

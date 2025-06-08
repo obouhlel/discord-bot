@@ -8,24 +8,25 @@ export class QuizAnswerChecker {
   }
 
   public cleanTitle(title: string): string {
-    let newTitle: string = title.toLowerCase() as string;
+    const newTitle: string = title.toLowerCase();
+
     const season = new RegExp(
       [
-        String.raw`\d*(st|nd|rd|th)?\s*season\s*(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
+        String.raw`\d+(st|nd|rd|th)?\s*season`,
+        String.raw`season\s+(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
         String.raw`part\s+(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
         String.raw`ova`,
         String.raw`ona`,
         String.raw`(the)?\s*movie\s*(\d+|[ivxlcdm]+)?`,
-        String.raw`(\d+|[ivxlcdm]+)$`,
+        String.raw`\s+(\d+|[ivxlcdm]+)$`,
       ].join("|"),
       "gi",
     );
 
-    if (newTitle!.match(season)) {
-      newTitle = newTitle!.split(season).join(" ");
-    }
-
-    return newTitle.replace(/\s+/g, "").replace(/[^\p{L}\p{N}]/gu, "");
+    return newTitle
+      .replace(season, "")
+      .replace(/\s+/g, "")
+      .replace(/[^\p{L}\p{N}]/gu, "");
   }
 
   public checkTitles(answer: string): boolean {
