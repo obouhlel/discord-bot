@@ -1,56 +1,21 @@
 import type { TitleMedia } from "types/responses/title";
-// import type { PrismaClient } from "generated/prisma";
 import type { TextChannel, User } from "discord.js";
 import type { RedisClient } from "bun";
-import type {
-  QuizData,
-  QuizHint,
-  QuizCharacter,
-  QuizCharacters,
-  QuizHintType,
-} from "types/quiz";
+import type { QuizData, QuizCharacter } from "types/quiz";
 import { EmbedBuilder } from "discord.js";
-import { capitalize } from "utils/capitalize";
+import { QuizHintManager } from "./QuizHintManager";
+import { QuizAnswerChecker } from "./QuizAnswerChecker";
 
 export class QuizManager {
   private _data: QuizData;
   private _redis: RedisClient;
   private _timeouts: Map<string, NodeJS.Timeout>;
   private _channel: TextChannel;
-  // private _prisma: PrismaClient;
-
   private _cheater = new Set(["831543267194568744"]);
-
   private _min = 1;
 
-  private readonly _hintParams = new Map([
-    ["cover", "The cover of the anime/manga (-4)"],
-    ["synopsis", "The plot summary of the anime/manga (-4)"],
-    ["genres", "The genres of the anime/manga (-1)"],
-    ["characters", "An other character of anime/manga (-1)"],
-  ]);
-
-  private readonly _hintNumberParams = new Map([
-    [1, "cover" as keyof QuizHint],
-    [2, "synopsis" as keyof QuizHint],
-    [3, "genres" as keyof QuizHint],
-    [4, "characters" as keyof QuizHint],
-  ]);
-
-  private readonly _hintScore = new Map([
-    ["cover" as keyof QuizHint, 4],
-    ["synopsis" as keyof QuizHint, 4],
-    ["genres" as keyof QuizHint, 1],
-    ["characters" as keyof QuizHint, 1],
-  ]);
-
-  private readonly _hintMapHandler = {
-    cover: (key: string, value: string) => this._displayCover(key, value),
-    synopsis: (key: string, value: string) => this._handlerSynopsis(key, value),
-    genres: (key: string, value: string[]) => this._displayGenres(key, value),
-    characters: (key: string, value: QuizCharacters[]) =>
-      this._handlerCharacter(key, value as QuizCharacters[]),
-  };
+  private _hintManager: QuizHintManager;
+  private _answerChecker: QuizAnswerChecker;
 
   constructor(
     data: QuizData | string,
@@ -66,6 +31,12 @@ export class QuizManager {
     this._redis = redis;
     this._timeouts = timeouts;
     this._channel = channel;
+    this._hintManager = new QuizHintManager(
+      this._data,
+      this._channel,
+      this._redis,
+    );
+    this._answerChecker = new QuizAnswerChecker(this._data);
   }
 
   public toJSON(): string {
@@ -93,7 +64,7 @@ export class QuizManager {
     return this._data.character;
   }
 
-  public getHints(): QuizHint {
+  public getHints() {
     return this._data.hint;
   }
 
@@ -123,141 +94,6 @@ export class QuizManager {
       .setColor("Random")
       .setTitle(this._data.character.name)
       .setImage(this._data.character.image);
-  }
-
-  // PRIVATE
-
-  private _getHintValue(hint: keyof QuizHint): QuizHintType {
-    return this._data.hint[hint];
-  }
-
-  private _getHintValueById(
-    index: number,
-  ): [keyof QuizHint, QuizHintType] | null {
-    const hint = this._hintNumberParams.get(index);
-    if (!hint) return null;
-    return [hint, this._data.hint[hint]];
-  }
-
-  // HINT SCORE MANAGEMENT
-
-  private _canUseHint(param: keyof QuizHint): boolean {
-    const value = this._hintScore.get(param)!;
-    const score = this._data.score - value;
-
-    if (score < 1) {
-      return false;
-    }
-    this._data.score -= value;
-    return true;
-  }
-
-  // HINT DISPLAY
-
-  private async _displayCover(key: string, value: string) {
-    const embed = new EmbedBuilder()
-      .setTitle(capitalize(key))
-      .setImage(value)
-      .setColor("Random");
-    await this._channel.send({ embeds: [embed] });
-  }
-
-  private async _displayGenres(key: string, value: string[]) {
-    await this._channel.send(
-      `**${capitalize(key)}:**\n${value.map((genre) => `- ${genre}\n`).join("")}`,
-    );
-  }
-
-  private async _handlerCharacter(key: string, value: QuizCharacters[]) {
-    if (value.length === 0) {
-      await this._channel.send(`All ${key} have been sent`);
-      return;
-    }
-    const random = Math.floor(Math.random() * (value.length - 1));
-    const character: QuizCharacter = value[random]!;
-    const embed = new EmbedBuilder()
-      .setColor("Random")
-      .setTitle(character.name)
-      .setImage(character.image);
-    this._data.hint.characters = this._data.hint.characters.filter(
-      (c) => character.id != c.id,
-    );
-    await this._channel.send({
-      embeds: [embed],
-    });
-  }
-
-  private async _handlerSynopsis(key: string, value: string) {
-    await this._channel.send(
-      `# ${capitalize(key.toString())}\n>>> ${value.toString()}`,
-    );
-  }
-
-  private async _hintHandler(key: keyof QuizHint, value: QuizHintType) {
-    if (key === "characters") {
-      await this._hintMapHandler[key](key, value as QuizCharacters[]);
-    } else if (key === "genres") {
-      await this._hintMapHandler[key](key, value as string[]);
-    } else {
-      await this._hintMapHandler[key](key, value as string);
-    }
-  }
-
-  // generate hints message
-  private _getHintInfo(): EmbedBuilder {
-    const paramsList = Array.from(this._hintParams.entries())
-      .map(([key, desc], i) => `${(i + 1).toString()} - \`${key}\`: ${desc}`)
-      .join("\n");
-    const embed = new EmbedBuilder()
-      .setTitle("Available Hint Parameters")
-      .setColor("Gold")
-      .setDescription(
-        `Use !hint with one or more of these parameters:\n${paramsList}\n**Example:** \`!hint synopsis\` or \`!hint 1\``,
-      );
-    return embed;
-  }
-
-  // Check title
-  private _cleanTitle(title: string): string {
-    let newTitle: string | undefined = title.toLowerCase() as string;
-    const season = new RegExp(
-      [
-        // Saison sous forme : "2nd season", "season II", etc.
-        String.raw`\d*(st|nd|rd|th)?\s*season\s*(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
-        // Partie : "part 2", "part IV", etc.
-        String.raw`part\s+(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
-        // OVA ou ONA
-        String.raw`ova`,
-        String.raw`ona`,
-        // Film : "the movie", "movie 2", "the movie III"
-        String.raw`(the)?\s*movie\s*(\d+|[ivxlcdm]+)?`,
-        // Finir par un chiffre ou un nombre romain : "Naruto 2", "Bleach VI"
-        String.raw`(\d+|[ivxlcdm]+)$`,
-      ].join("|"),
-      "gi",
-    );
-    const regexMap = new Map([
-      [/^.{4,}:/g, ":"],
-      [/^\w+!!/g, "!!"],
-    ]);
-
-    for (const [regex, separator] of regexMap) {
-      if (newTitle!.match(regex)) {
-        newTitle = newTitle!.split(separator)[0];
-      }
-    }
-
-    if (newTitle!.match(season)) {
-      newTitle = newTitle!.split(season).join(" ");
-    }
-
-    return (newTitle ?? title)
-      .replace(/\s+/g, "")
-      .replace(/[^\p{L}\p{N}]/gu, "");
-  }
-
-  private async _updateData(key: string) {
-    await this._redis.set(key, this.toJSON());
   }
 
   // PUBLIC
@@ -295,130 +131,18 @@ export class QuizManager {
     await this._channel.send({ embeds: [embed] });
   }
 
-  // check the answer (already in lowercase)
+  public cleanTitle(title: string): string {
+    return this._answerChecker.cleanTitle(title);
+  }
+
   public checkTitles(answer: string): boolean {
-    const test = (anwser: string, titles: string[]): boolean => {
-      if (titles.length === 0) return true;
-
-      return titles.some((title) => {
-        // console.info('Checking title:', title);
-
-        const titleCleaned = this._cleanTitle(title!);
-        const answerCleaned = this._cleanTitle(anwser);
-
-        // check if anwser match, even if anagram ("chien" === "niche" ✅ true)
-        const answerSorted = answerCleaned.split("").sort().join("");
-        const titleSorted = titleCleaned.split("").sort().join("");
-
-        const regexReplaceNonAsciiToSpace = /[^\p{L}\p{N}]/gu;
-        const numberOfWordsInTitle = title
-          .replace(regexReplaceNonAsciiToSpace, " ")
-          .trim()
-          .split(/\s+/).length;
-
-        /** @see https://fr.wikipedia.org/wiki/Distance_de_Levenshtein */
-        const matchAnswerWithLevenshteinDistance = (
-          answer: string,
-          title: string,
-          numberOfMistakesPossible: number,
-        ): boolean => {
-          const a = answer.toLowerCase().trim();
-          const b = title.toLowerCase().trim();
-
-          const rows = a.length + 1;
-          const cols = b.length + 1;
-
-          const matrix = Array.from({ length: rows }, () =>
-            new Array<number>(cols).fill(0),
-          ) as number[][];
-
-          for (let i = 0; i < rows; i++) {
-            // @ts-expect-error Could not find a way to type this correctly
-            matrix[i][0] = i;
-          }
-          for (let j = 0; j < cols; j++) {
-            // @ts-expect-error Could not find a way to type this correctly
-            matrix[0][j] = j;
-          }
-
-          for (let i = 1; i < rows; i++) {
-            for (let j = 1; j < cols; j++) {
-              const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-              // @ts-expect-error Could not find a way to type this correctly
-              matrix[i][j] = Math.min(
-                // @ts-expect-error Could not find a way to type this correctly
-                (matrix[i - 1][j] ?? Infinity) + 1,
-                // @ts-expect-error Could not find a way to type this correctly
-                (matrix[i][j - 1] ?? Infinity) + 1,
-                // @ts-expect-error Could not find a way to type this correctly
-                (matrix[i - 1][j - 1] ?? Infinity) + cost,
-              );
-            }
-          }
-
-          // @ts-expect-error Could not find a way to type this correctly
-          const distance = matrix[a.length][b.length];
-          // @ts-expect-error Could not find a way to type this correctly
-          return distance <= numberOfMistakesPossible;
-        };
-
-        const answerMatch = answerSorted === titleSorted;
-        const answerMatchWithMistake = matchAnswerWithLevenshteinDistance(
-          answerCleaned,
-          titleCleaned,
-          numberOfWordsInTitle - 1,
-        );
-
-        // console.info(`answerCorrect ? : ${answerMatch ? 'true' : 'false'}`);
-        // console.info(`matchPercentage ? : ${answerMatchWithMistake ? 'true' : 'false'}`);
-
-        return answerMatch || answerMatchWithMistake;
-      });
-    };
-
-    return test(
-      answer,
-      this._data.titles.map((t) => t.title),
-    );
+    return this._answerChecker.checkTitles(answer);
   }
 
-  // commands hint management
   public async hint(answer: string, quizId: string) {
-    const [, param] = answer.split(" ");
-    if (
-      param &&
-      param in this.getHints() &&
-      this._canUseHint(param as keyof QuizHint)
-    ) {
-      const hint = this._getHintValue(param as keyof QuizHint);
-      if (!hint) {
-        await this._channel.send(`The \`${param}\` not found in database`);
-        return;
-      }
-      await this._hintHandler(param as keyof QuizHint, hint);
-      await this._updateData(quizId);
-    } else if (
-      param &&
-      this._hintNumberParams.get(Number(param)) &&
-      this._canUseHint(this._hintNumberParams.get(Number(param))!)
-    ) {
-      const result = this._getHintValueById(Number(param));
-      if (!result) return;
-      const [key, value] = result;
-      await this._hintHandler(key, value);
-      await this._updateData(quizId);
-    } else {
-      if (param) {
-        await this._channel.send("You can't use more hint, use `!skip`.");
-      } else {
-        await this._channel.send({
-          embeds: [this._getHintInfo()],
-        });
-      }
-    }
+    await this._hintManager.hint(answer, quizId);
   }
 
-  // commands skip
   public async skip(key: string) {
     await this.clear(key);
     const title = this.getTitle();
@@ -438,7 +162,6 @@ export class QuizManager {
     await this._channel.send({ content: titles, embeds: [embed] });
   }
 
-  // commands cheat
   public async cheat(user: User) {
     if (this._cheater.has(user.id)) {
       await user.send(
@@ -449,7 +172,6 @@ export class QuizManager {
     }
   }
 
-  // destroy the data in redis and stop the timer
   public async clear(key: string): Promise<void> {
     const timeoutEnd = this._timeouts.get(key + ":end");
     if (timeoutEnd) {

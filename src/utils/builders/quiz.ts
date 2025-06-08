@@ -7,6 +7,7 @@ import type {
   CharacterResponse,
 } from "types/responses/jikan/characters";
 import { QuizManager } from "managers/QuizManager";
+import type { TitleMedia } from "types/responses/title";
 
 const API_URL = "https://api.jikan.moe/v4";
 const UNKNOWN = "https://cdn.myanimelist.net/images/questionmark_23.gif";
@@ -52,9 +53,32 @@ function formatCharactersList(
     .filter((c) => c.id !== excludeId);
 }
 
+function addCustomTitle(titles: TitleMedia[]): TitleMedia[] {
+  const newTitles = [...titles];
+  const regexMap = new Map([
+    [/^.{4,}:/g, ":"],
+    [/^\w+!!/g, "!!"],
+  ]);
+
+  for (const title of titles) {
+    if (title.type === "Japanese") continue;
+    let newTitle: string | undefined = title.title;
+    for (const [regex, separator] of regexMap) {
+      if (newTitle?.match(regex)) {
+        newTitle = newTitle!.split(separator)[0];
+      }
+    }
+    if (newTitle && !newTitles.some((t) => t.title === newTitle)) {
+      newTitles.push({ type: "Custom", title: newTitle });
+    }
+  }
+
+  return newTitles;
+}
+
 function extractMediaInfo(media: AnimeResponse) {
   return {
-    titles: media.data.titles,
+    titles: addCustomTitle(media.data.titles),
     url: media.data.url,
     synopsis: media.data.synopsis,
     genres: media.data.genres.map((genre) => genre.name),
@@ -87,7 +111,9 @@ export async function buildQuizDataManager(
     image: selectedCharacter.character.images.webp.image_url,
   };
 
+  console.log("Extract info");
   const mediaInfo = extractMediaInfo(mediaData);
+  console.log(mediaInfo);
 
   const data: QuizData = {
     character: characterInfo,

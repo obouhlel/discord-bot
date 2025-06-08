@@ -33,7 +33,6 @@
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
     "@fastify/helmet": "^13.0.1",
-    "@huggingface/inference": "^3.15.0",
     "@prisma/client": "^6.9.0",
     "discord.js": "^14.19.3",
     "eslint": "^9.28.0",
