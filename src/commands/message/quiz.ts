@@ -1,7 +1,7 @@
 import type { MessageCommandContext } from "types/commands/message";
 import type { TextChannel, User } from "discord.js";
 import type { PrismaClient } from "generated/prisma";
-import { QuizManager } from "managers/QuizManager";
+import { QuizManager } from "managers/quiz/QuizManager";
 import { EmbedBuilder } from "discord.js";
 import { MessageCommand } from "types/commands/message";
 

@@ -11,7 +11,7 @@ import {
 } from "discord.js";
 import type CustomDiscordClient from "types/custom-discord-client";
 import { getAnimeListUser } from "utils/database/get-animes-list-user";
-import { buildQuizDataManager } from "utils/builders/quiz";
+import { QuizBuilder } from "managers/quiz/QuizBuilder";
 
 export const quiz = {
   data: new SlashCommandBuilder()
@@ -30,6 +30,7 @@ export const quiz = {
     const { prisma, redis, timeouts } = client;
     const user: User = interaction.user;
     const channel: TextBasedChannel | null = interaction.channel;
+    const quizBuilder = new QuizBuilder();
 
     if (!channel || !channel.isSendable()) {
       await interaction.reply("I cannot interact with this channel.");
@@ -82,7 +83,7 @@ export const quiz = {
     const index = random % malIds.length;
     const malId = malIds[index]!;
 
-    const data = await buildQuizDataManager(
+    const data = await quizBuilder.buildQuizManager(
       malId,
       redis,
       timeouts,
