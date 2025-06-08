@@ -75,14 +75,7 @@ export default class Quiz extends MessageCommand {
           .setImage(quiz.getHints().cover)
           .setURL(quiz.getUrl());
 
-        const titles = quiz
-          .getTitles()
-          .map((title) => `- **${title.type}**: ${title.title}`)
-          .join("\n");
-
-        const embedTitles = new EmbedBuilder()
-          .setTitle("Titles")
-          .setDescription(titles);
+        const embedTitles = quiz.getTitlesEmbed();
 
         await channel.send({ embeds: [embed, embedTitles] });
       }

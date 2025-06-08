@@ -56,6 +56,14 @@ export class QuizManager {
     );
   }
 
+  public getTitlesEmbed(): EmbedBuilder {
+    const titles = this.getTitles()
+      .map((title) => `- **${title.type}**: ${title.title}`)
+      .join("\n");
+
+    return new EmbedBuilder().setTitle("Titles").setDescription(titles);
+  }
+
   public getUrl(): string {
     return this._data.url;
   }
@@ -126,13 +134,7 @@ export class QuizManager {
       .setImage(this._data.hint.cover)
       .setURL(this.getUrl());
 
-    const titles = this.getTitles()
-      .map((title) => `- **${title.type}**: ${title.title}`)
-      .join("\n");
-
-    const embedTitles = new EmbedBuilder()
-      .setTitle("Titles")
-      .setDescription(titles);
+    const embedTitles = this.getTitlesEmbed();
 
     this._timeouts.delete(key + ":end");
     await this._redis.del(key);
@@ -163,15 +165,9 @@ export class QuizManager {
       .setImage(this._data.hint.cover)
       .setURL(url);
 
-    const titles = this.getTitles()
-      .map((title) => `- **${title.type}**: ${title.title}`)
-      .join("\n");
+    const embedTitles = this.getTitlesEmbed();
 
-    const embedTitles = new EmbedBuilder()
-      .setTitle("Titles")
-      .setDescription(titles);
-
-    await this._channel.send({ content: titles, embeds: [embed, embedTitles] });
+    await this._channel.send({ embeds: [embed, embedTitles] });
   }
 
   public async cheat(user: User) {
