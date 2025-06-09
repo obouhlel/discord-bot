@@ -38,3 +38,12 @@ test("Japanese title with season", async () => {
 
   expect(quizAnswerChecker.checkTitles("弱キャラ友崎くん")).toBe(true);
 });
+
+test("Assassination Classroom test", async () => {
+  const quiz = new QuizBuilder();
+  const data: QuizData | null = await quiz.buildQuizData(30654);
+  if (!data) throw new Error("Data not found");
+  const quizAnswerChecker = new QuizAnswerChecker(data);
+
+  expect(quizAnswerChecker.checkTitles("assassination classroom")).toBe(true);
+});
