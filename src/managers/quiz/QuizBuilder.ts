@@ -8,6 +8,7 @@ import type {
 } from "types/responses/jikan/characters";
 import { QuizManager } from "managers/quiz/QuizManager";
 import type { TitleMedia } from "types/responses/title";
+import type { PrismaClient } from "generated/prisma";
 
 export class QuizBuilder {
   private readonly API_URL = "https://api.jikan.moe/v4";
@@ -15,11 +16,19 @@ export class QuizBuilder {
     "https://cdn.myanimelist.net/images/questionmark_23.gif";
 
   private async requestGet(url: string): Promise<unknown> {
-    const response = await fetch(url);
-    if (!response.ok) {
-      return null;
+    let response: Response;
+    let status = 429;
+    let retries = 0;
+
+    while (status === 429 && retries < 3) {
+      response = await fetch(url);
+      status = response.status;
+      if (!response.ok && status !== 429) return null;
+      if (status !== 429) return await response.json();
+      const delay = Math.min(1000 * Math.pow(2, retries), 2000);
+      await new Promise((res) => setTimeout(res, delay));
+      retries++;
     }
-    return await response.json();
   }
 
   private async fetchMediaData(id: number): Promise<AnimeResponse | null> {
@@ -98,6 +107,7 @@ export class QuizBuilder {
     do {
       mediaData = await this.fetchMediaData(id);
     } while (!mediaData);
+
     const charactersData = await this.fetchCharacters(id);
     const characters = charactersData.filter(
       (data) => !data.character.images.webp.image_url.startsWith(this.UNKNOWN),
@@ -133,9 +143,10 @@ export class QuizBuilder {
     redis: RedisClient,
     timeouts: Map<string, NodeJS.Timeout>,
     channel: TextChannel,
+    prisma: PrismaClient,
   ): Promise<QuizManager | null> {
     const data: QuizData | null = await this.buildQuizData(id);
     if (!data) return null;
-    return new QuizManager(data, redis, timeouts, channel);
+    return new QuizManager(data, redis, timeouts, channel, prisma);
   }
 }

@@ -6,7 +6,7 @@ import { QuizAnswerChecker } from "managers/quiz/QuizAnswerChecker";
 test("Test Danmachi", async () => {
   const quiz = new QuizBuilder();
   const data: QuizData | null = await quiz.buildQuizData(37347);
-  if (!data) return;
+  if (!data) throw new Error("Data not found");
   const quizAnswerChecker = new QuizAnswerChecker(data);
 
   expect(quizAnswerChecker.checkTitles("danmachi")).toBe(true);
@@ -15,8 +15,26 @@ test("Test Danmachi", async () => {
 test("Test Overlord", async () => {
   const quiz = new QuizBuilder();
   const data: QuizData | null = await quiz.buildQuizData(35073);
-  if (!data) return;
+  if (!data) throw new Error("Data not found");
   const quizAnswerChecker = new QuizAnswerChecker(data);
 
   expect(quizAnswerChecker.checkTitles("overlord")).toBe(true);
+});
+
+test("Test Oregairu", async () => {
+  const quiz = new QuizBuilder();
+  const data: QuizData | null = await quiz.buildQuizData(39547);
+  if (!data) throw new Error("Data not found");
+  const quizAnswerChecker = new QuizAnswerChecker(data);
+
+  expect(quizAnswerChecker.checkTitles("oregairu")).toBe(true);
+});
+
+test("Japanese title with season", async () => {
+  const quiz = new QuizBuilder();
+  const data: QuizData | null = await quiz.buildQuizData(50803);
+  if (!data) throw new Error("Data not found");
+  const quizAnswerChecker = new QuizAnswerChecker(data);
+
+  expect(quizAnswerChecker.checkTitles("弱キャラ友崎くん")).toBe(true);
 });

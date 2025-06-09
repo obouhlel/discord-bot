@@ -12,8 +12,8 @@ export class QuizAnswerChecker {
 
     const season = new RegExp(
       [
-        String.raw`\d+(st|nd|rd|th)?\s*season`,
-        String.raw`season\s+(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
+        String.raw`\d+(st|nd|rd|th)?\s*(season|stage|movie|film)`,
+        String.raw`(season|stage|movie|film)\s+(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
         String.raw`part\s+(\d+|[ivxlcdm]+)(st|nd|rd|th)?`,
         String.raw`ova`,
         String.raw`ona`,
@@ -36,6 +36,8 @@ export class QuizAnswerChecker {
       return titles.some((title) => {
         const titleCleaned = this.cleanTitle(title);
         const answerCleaned = this.cleanTitle(anwser);
+        console.log("title = ", title);
+        console.log("answer = ", answer);
 
         const answerSorted = answerCleaned.split("").sort().join("");
         const titleSorted = titleCleaned.split("").sort().join("");

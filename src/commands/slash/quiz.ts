@@ -89,6 +89,7 @@ export const quiz = {
       redis,
       timeouts,
       channel as TextChannel,
+      prisma,
     );
     if (!data) {
       await interaction.editReply("Please retry the commands");
