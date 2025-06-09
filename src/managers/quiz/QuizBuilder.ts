@@ -68,7 +68,7 @@ export class QuizBuilder {
     const regexMap = new Map([
       [/^.{4,},/g, ","],
       [/^.{4,}:/g, ":"],
-      [/^\w+!!/g, "!!"],
+      [/^\w+!/g, "!"],
     ]);
 
     for (const title of titles) {
