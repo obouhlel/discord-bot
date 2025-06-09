@@ -41,10 +41,13 @@ export class QuizAnswerChecker {
         const titleSorted = titleCleaned.split("").sort().join("");
 
         const regexReplaceNonAsciiToSpace = /[^\p{L}\p{N}]/gu;
-        const numberOfWordsInTitle = title
-          .replace(regexReplaceNonAsciiToSpace, " ")
-          .trim()
-          .split(/\s+/).length;
+        const numberOfWordsInTitle =
+          titleSorted.length > 5
+            ? title
+                .replace(regexReplaceNonAsciiToSpace, " ")
+                .trim()
+                .split(/\s+/).length
+            : 0;
 
         const matchAnswerWithLevenshteinDistance = (
           answer: string,

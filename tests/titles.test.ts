@@ -47,3 +47,12 @@ test("Assassination Classroom test", async () => {
 
   expect(quizAnswerChecker.checkTitles("assassination classroom")).toBe(true);
 });
+
+test("K-On test", async () => {
+  const quiz = new QuizBuilder();
+  const data: QuizData | null = await quiz.buildQuizData(7791);
+  if (!data) throw new Error("Data not found");
+  const quizAnswerChecker = new QuizAnswerChecker(data);
+
+  expect(quizAnswerChecker.checkTitles("!gint 4")).toBe(false);
+});
