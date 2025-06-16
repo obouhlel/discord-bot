@@ -33,6 +33,6 @@
 		"fastify-plugin": "^5.0.1"
 	},
 	"lint-staged": {
-		"**/*": "biome format --write --ignore-unknown"
+		"**/*": "biome format --write --files-ignore-unknown=true"
 	}
 }
