@@ -8,6 +8,7 @@
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+[![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 This project is a Discord bot built with [Bun](https://bun.sh/), [TypeScript](https://www.typescriptlang.org/), and [discord.js](https://discord.js.org/). It also uses [Fastify](https://www.fastify.io/) for the HTTP server and [Prisma](https://www.prisma.io/) as the ORM.
