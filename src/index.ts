@@ -19,7 +19,7 @@ import { messageCreate } from "events/message-create";
 import type { Interaction, Message } from "discord.js";
 
 const fastify = Fastify({
-	logger: true,
+	logger: false,
 });
 
 fastify.register(helmet);
