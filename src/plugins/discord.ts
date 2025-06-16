@@ -1,21 +1,21 @@
-import type { FastifyPluginOptions, FastifyInstance } from "fastify";
-import DiscordService from "services/discord";
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import fp from "fastify-plugin";
+import DiscordService from "services/discord";
 
 declare module "fastify" {
-  interface FastifyInstance {
-    discord: DiscordService;
-  }
+	interface FastifyInstance {
+		discord: DiscordService;
+	}
 }
 
 const discordPlugin = fp(function (
-  server: FastifyInstance,
-  opts: FastifyPluginOptions,
-  done: () => void,
+	server: FastifyInstance,
+	_opts: FastifyPluginOptions,
+	done: () => void,
 ) {
-  const discord = new DiscordService(server.redis, server.prisma);
-  server.decorate("discord", discord);
-  done();
+	const discord = new DiscordService(server.redis, server.prisma);
+	server.decorate("discord", discord);
+	done();
 });
 
 export default discordPlugin;

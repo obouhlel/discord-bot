@@ -1,48 +1,47 @@
 import type { AnimeStatus } from "types/anime-status";
 
 export interface UserAnilistRaw {
-  data: {
-    User: UserAnilist;
-  };
+	data: {
+		User: UserAnilist;
+	};
 }
 
 export interface UserAnilist {
-  id: number;
-  name: string;
-  siteUrl: string;
-  avatar: {
-    large: string;
-  };
-  options: {
-    profileColor: string;
-  };
+	id: number;
+	name: string;
+	siteUrl: string;
+	avatar: {
+		large: string;
+	};
+	options: {
+		profileColor: string;
+	};
 }
 
 export interface Body {
-  query: string;
-  // eslint-disable-next-line
-  variables: {
-    [key: string]: string | number;
-  };
+	query: string;
+	variables: {
+		[key: string]: string | number;
+	};
 }
 
 export interface EntryRaw {
-  media: {
-    idMal: number | null;
-    isAdult: boolean;
-  };
+	media: {
+		idMal: number | null;
+		isAdult: boolean;
+	};
 }
 
 export interface ListRaw {
-  name: string;
-  status: AnimeStatus;
-  entries: EntryRaw[];
+	name: string;
+	status: AnimeStatus;
+	entries: EntryRaw[];
 }
 
 export interface AnimeListRaw {
-  data: {
-    MediaListCollection: {
-      lists: ListRaw[];
-    };
-  };
+	data: {
+		MediaListCollection: {
+			lists: ListRaw[];
+		};
+	};
 }
