@@ -1,45 +1,38 @@
 {
-  "name": "discord-bot",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev": "docker compose up -d && sleep 3 && bun --watch src/index.ts",
-    "watch": "bun --watch src/index.ts",
-    "lint": "eslint src --ignore-pattern 'src/generated'",
-    "format": "prettier . --write",
-    "format:check": "prettier --check .",
-    "server": "bun ./src/index.ts",
-    "migrate:dev": "prisma migrate dev --name init",
-    "migrate:prod": "prisma migrate deploy",
-    "generate": "prisma generate",
-    "prepare": "husky"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.28.0",
-    "@stylistic/eslint-plugin": "^4.4.1",
-    "@types/bun": "latest",
-    "@types/eslint": "^9.6.1",
-    "@types/eslint__js": "^8.42.3",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.0",
-    "prettier": "3.5.3",
-    "prisma": "^6.9.0",
-    "typescript-eslint": "^8.33.1"
-  },
-  "peerDependencies": {
-    "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "@fastify/cookie": "^11.0.2",
-    "@fastify/helmet": "^13.0.1",
-    "@prisma/client": "^6.9.0",
-    "discord.js": "^14.19.3",
-    "eslint": "^9.28.0",
-    "fastify": "^5.3.3",
-    "fastify-plugin": "^5.0.1"
-  },
-  "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
-  }
+	"name": "discord-bot",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "docker compose up -d && sleep 3 && bun --watch src/index.ts",
+		"watch": "bun --watch src/index.ts",
+		"lint": "biome lint --write",
+		"format": "biome format --write",
+		"check": "biome check",
+		"server": "bun ./src/index.ts",
+		"migrate:dev": "prisma migrate dev --name init",
+		"migrate:prod": "prisma migrate deploy",
+		"generate": "prisma generate",
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/bun": "latest",
+		"husky": "^9.1.7",
+		"prisma": "^6.9.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"@fastify/cookie": "^11.0.2",
+		"@fastify/helmet": "^13.0.1",
+		"@prisma/client": "^6.9.0",
+		"discord.js": "^14.19.3",
+		"fastify": "^5.4.0",
+		"fastify-plugin": "^5.0.1"
+	},
+	"lint-staged": {
+		"**/*": "biome format --write --files-ignore-unknown=true"
+	}
 }

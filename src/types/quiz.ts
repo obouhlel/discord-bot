@@ -3,28 +3,28 @@ import type { TitleMedia } from "./responses/title";
 export type QuizHintType = string | string[] | QuizCharacters[];
 
 export interface QuizCharacter {
-  id: number;
-  name: string;
-  image: string;
+	id: number;
+	name: string;
+	image: string;
 }
 
 export interface QuizCharacters {
-  id: number;
-  name: string;
-  image: string;
+	id: number;
+	name: string;
+	image: string;
 }
 
 export interface QuizHint {
-  synopsis: string;
-  genres: string[];
-  cover: string;
-  characters: QuizCharacters[];
+	synopsis: string;
+	genres: string[];
+	cover: string;
+	characters: QuizCharacters[];
 }
 
 export interface QuizData {
-  character: QuizCharacter;
-  hint: QuizHint;
-  titles: TitleMedia[];
-  url: string;
-  score: number;
+	character: QuizCharacter;
+	hint: QuizHint;
+	titles: TitleMedia[];
+	url: string;
+	score: number;
 }
