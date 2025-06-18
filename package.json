@@ -19,7 +19,7 @@
 		"@biomejs/biome": "1.9.4",
 		"@types/bun": "latest",
 		"husky": "^9.1.7",
-		"prisma": "^6.9.0"
+		"prisma": "^6.10.0"
 	},
 	"peerDependencies": {
 		"typescript": "^5.8.3"
@@ -27,8 +27,8 @@
 	"dependencies": {
 		"@fastify/cookie": "^11.0.2",
 		"@fastify/helmet": "^13.0.1",
-		"@prisma/client": "^6.9.0",
-		"discord.js": "^14.19.3",
+		"@prisma/client": "^6.10.0",
+		"discord.js": "^14.20.0",
 		"fastify": "^5.4.0",
 		"fastify-plugin": "^5.0.1"
 	},
